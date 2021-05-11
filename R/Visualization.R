@@ -65,8 +65,8 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
     ############
     Feature.List.Data  <- lapply(Feature.List.Data, function(Feature.Data){
       Feature.Data <- as.list(Feature.Data)
-      if(is.null(Feature.Data$Point.Data) && is.null(Feature.Data$Segment.Data)){
-        warning("当前数据不存在'Point.Data'或'Segment.Data', 不符合要求, 已将其从队列中移 ...", call. = FALSE)
+      if((is.null(Feature.Data$Point.Data) || nrow(as.data.frame(Feature.Data$Point.Data)) == 0) && (is.null(Feature.Data$Segment.Data) || nrow(as.data.frame(Feature.Data$Segment.Data)) == 0)){
+        stop("当前数据不存在'Point.Data'或'Segment.Data', 不符合要求, 请将其从队列中移 ...", call. = FALSE)
         return(NA)
       }else{
         if(is.null(Feature.Data$Feature.Name)){
