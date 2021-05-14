@@ -1,6 +1,173 @@
 ##############################函数描述##############################
+# “Venn.View”绘制venn图(最多支持七个集合)
 # "Genome.View"对基因组上的信号特征(点和线段)进行可视化(至少可视化一条基因组版本包含的序列)
 ####################################################################
+
+
+##' @description 绘制venn图(最多支持七个集合)
+##' @author Xteam.Wh
+##' @param ... character[] 每个向量为一个集合
+##' @param Sets.List list 集合列表, 每一个元素为一个向量
+##' @param Show.Set.Total logical 是否统计各集合的元素数量并显示在集合标签尾部
+##' @param Show.Percentage logical 是否计算各交集元素所占总元素数量的百分比并标注在交集标签下方
+##' @param Sets.Name character[] 单独指定每个集合的名称向量，用于设置集合标签
+##' @param Sets.Fill.Color character[] 单独指定每个集合的填充颜色向量
+##' @param Sets.Fill.Opacity numeric 设置集合的填充颜色的透明度
+##' @param Sets.Name.Size numeric 设置集合标签的尺寸
+##' @param Sets.Name.Color numeric 设置集合标签的颜色
+##' @param Sets.Name.Opacity numeric 设置集合标签颜色的透明的
+##' @param Stroke.Size numeric 设置集合边缘线的尺寸
+##' @param Stroke.Color numeric 设置合边缘线的颜色
+##' @param Stroke.Opacity numeric 设置合边缘线颜色的透明的
+##' @param Stroke.Linetype numeric | character 设置合边缘线的线型
+##' @param Intersection.Label.Size numeric 设置交集标签的尺寸
+##' @param Intersection.Label.Color numeric 设置交集标签的颜色
+##' @param Intersection.Label.Opacity numeric 设置交集标签颜色的透明的
+##' @return 返回venn图的绘图信息
+Venn.View <- function(..., Sets.List = NULL, 
+                      Show.Set.Total = FALSE, Show.Percentage = FALSE, 
+                      Sets.Name = NULL, Sets.Fill.Color = NULL, Sets.Fill.Opacity = 0.5,
+                      Sets.Name.Size = 5, Sets.Name.Color = "DarkSlateGray", Sets.Name.Opacity = 1, 
+                      Stroke.Size = 1, Stroke.Color = NULL, Stroke.Opacity = 1, Stroke.Linetype = "solid", 
+                      Intersection.Label.Size = 3, Intersection.Label.Color = "DarkSlateGray", Intersection.Label.Opacity = 1){
+  ############
+  ## 0.集合数据的整合
+  ############
+  Sets.List <- lapply(c(list(...), as.list(Sets.List)), function(Set){ return(unique(as.character(Set))) })
+  Sets.List.Num <- length(Sets.List)
+  Sets.List.Member.Num <- length(unique(as.character(Sets.List)))
+  
+  if(Sets.List.Num < 8){
+    
+    ############
+    ## 1.参数判断与预处理
+    ############
+    Show.Percentage <- as.logical(Show.Percentage)
+    if(length(Show.Percentage) != 1){
+      stop("'Show.Percentage'应为单一的logical值 ...")
+    }
+    
+    Show.Set.Total <- as.logical(Show.Set.Total)
+    if(length(Show.Set.Total) != 1){
+      stop("'Show.Set.Total'应为单一的logical值 ...")
+    }
+    
+    Sets.Name <- as.character(Sets.Name)
+    if(length(Sets.Name) == 0){
+      Sets.Name <- names(Sets.List)
+      if(is.null(Sets.Name)){ Sets.Name <- sprintf("Set_%s", 1:Sets.List.Num)}
+    }else if(length(Sets.Name) != Sets.List.Num){
+      stop(sprintf("Sets.Name: 需要的标签数目为【%s】, 给定的标签数目为【%s】 ...", length(Sets.Name), Sets.List.Num))
+    }
+    
+    Sets.Fill.Color <- as.character(Sets.Fill.Color)
+    if(length(Sets.Fill.Color) == 0){
+      Sets.Fill.Color <- RColorBrewer::brewer.pal(7, "Set2")[1:Sets.List.Num]
+    }else if(length(Sets.Fill.Color) != Sets.List.Num){
+      stop(sprintf("Sets.Fill.Color: 需要的颜色数目为【%s】, 给定的颜色数目为【%s】 ...", length(Sets.Fill.Color), Sets.List.Num))
+    }
+    
+    Sets.Fill.Opacity <- as.numeric(Sets.Fill.Opacity)
+    if(length(Sets.Fill.Opacity) != 1 || Sets.Fill.Opacity < 0 || Sets.Fill.Opacity > 1){
+      stop("'Sets.Fill.Opacity'应为介于[0, 1]之间的numeric值 ...")
+    }
+    
+    Sets.Name.Size <- as.numeric(Sets.Name.Size)
+    if(length(Sets.Name.Size) != 1 || Sets.Name.Size <= 0){
+      stop("'Sets.Name.Size'应为大于0的numeric值 ...")
+    }
+    
+    Sets.Name.Color <- as.character(Sets.Name.Color)
+    if(length(Sets.Name.Color) != 1){
+      stop("'Sets.Name.Color'应为单一的character值 ...")
+    }
+    
+    Sets.Name.Opacity <- as.numeric(Sets.Name.Opacity)
+    if(length(Sets.Name.Opacity) != 1 || Sets.Name.Opacity < 0 || Sets.Name.Opacity > 1){
+      stop("'Sets.Name.Opacity'应为介于[0, 1]之间的numeric值 ...")
+    }
+    
+    Stroke.Size <- as.numeric(Stroke.Size)
+    if(length(Stroke.Size) != 1 || Stroke.Size < 0){
+      stop("'Stroke.Size'应为大于等于0的numeric值 ...")
+    }
+    
+    Stroke.Color <- as.character(Stroke.Color)
+    if(length(Stroke.Color) == 0){
+      Stroke.Color <- Sets.Fill.Color
+    }else if(length(Stroke.Color) == 1){
+      Stroke.Color <- rep(Stroke.Color, Sets.List.Num)
+    }else{
+      stop("'Stroke.Color'应为Null或单一的character值 ...")
+    }
+    
+    Stroke.Opacity <- as.numeric(Stroke.Opacity)
+    if(length(Stroke.Opacity) != 1 || Stroke.Opacity < 0 || Stroke.Opacity > 1){
+      stop("'Stroke.Opacity'应为介于[0, 1]之间的numeric值 ...")
+    }
+    
+    Stroke.Linetype <- as.character(Stroke.Linetype)
+    if(length(Stroke.Opacity) == 1){
+      warn.default = getOption("warn")
+      options(warn = -1)
+      if(!is.na(as.numeric(Stroke.Linetype))){ Stroke.Linetype <- as.numeric(Stroke.Linetype) }
+      options(warn = warn.default)
+    }else{
+      stop("'Stroke.Linetype'应为单一的numeric或character值 ...")
+    }
+    
+    Intersection.Label.Size <- as.numeric(Intersection.Label.Size)
+    if(length(Intersection.Label.Size) != 1 || Intersection.Label.Size <= 0){
+      stop("'Intersection.Label.Size'应为大于0的numeric值 ...")
+    }
+    
+    Intersection.Label.Color <- as.character(Intersection.Label.Color)
+    if(length(Intersection.Label.Color) != 1){
+      stop("'Intersection.Label.Color'应为单一的character值 ...")
+    }
+    
+    Intersection.Label.Opacity <- as.numeric(Intersection.Label.Opacity)
+    if(length(Intersection.Label.Opacity) != 1 || Intersection.Label.Opacity < 0 || Intersection.Label.Opacity > 1){
+      stop("'Intersection.Label.Opacity'应为介于[0, 1]之间的numeric值 ...")
+    }
+    
+    ############
+    ## 2.获取ggplot格式的venn图信息并对其进行修改
+    ############
+    plot <- venn::venn(Sets.List, zcolor = Sets.Fill.Color, ilabels = TRUE, opacity = Sets.Fill.Opacity, box = FALSE, ggplot = TRUE)
+    Layers.Num <- length(plot$layers)
+    Layers.Fill.Index <- 1:Sets.List.Num + 1
+    Layers.Name.Index <- tail(1:Layers.Num, Sets.List.Num)
+    Layers.Stroke.Index <- Layers.Fill.Index + Sets.List.Num
+    Layers.Intersection.Index <- (tail(Layers.Stroke.Index, 1) + 1):(head(Layers.Name.Index, 1) - 1)
+    plot$layers <- lapply(1:Layers.Num, function(Index){
+      Layer <- plot$layers[[Index]]
+      if(Index %in% Layers.Name.Index){
+        Layer$aes_params$size <- Sets.Name.Size
+        Layer$aes_params$label <- Sets.Name[Layers.Name.Index == Index]
+        Layer$aes_params$colour <- scales::alpha(Sets.Name.Color, Sets.Name.Opacity)
+        if(Show.Set.Total){ Layer$aes_params$label <- sprintf("%s(%s)", Layer$aes_params$label, length(Sets.List[[which(Layers.Name.Index == Index)]])) }
+      }else if(Index %in% Layers.Stroke.Index){
+        Layer$aes_params$size <- Stroke.Size
+        Layer$aes_params$linetype <- Stroke.Linetype
+        Layer$aes_params$colour <- scales::alpha(Stroke.Color[Layers.Stroke.Index == Index], Stroke.Opacity)
+      }else if(Index %in% Layers.Intersection.Index){
+        Layer$aes_params$size <- Intersection.Label.Size
+        Layer$aes_params$colour <- scales::alpha(Intersection.Label.Color, Intersection.Label.Opacity)
+        if(Show.Percentage){ Layer$aes_params$label <- paste0(sprintf("%s\n%.3f", Layer$aes_params$label, as.numeric(Layer$aes_params$label)/Sets.List.Member.Num), "%") }
+      }
+      return(Layer)
+    })
+    
+    ############
+    ## 3.返回修改后的绘图结果
+    ############
+    return(plot)
+  }else{
+    stop("集合数目不应超过【7】个 ...")
+  }
+}
+
 
 
 ##' @description 对基因组上的信号特征(点和线段)进行可视化(至少可视化一条基因组版本包含的序列)
@@ -50,7 +217,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
   ############
   # 提取特征信号数据中包含的基因组序列名称
   Common.SeqName <- unique(unlist(lapply(Feature.List.Data, function(Feature.Data){return(unique(c(as.list(Feature.Data)$Point.Data$SeqName, as.list(Feature.Data)$Segment.Data$SeqName)))})))
-  if(all(Common.SeqName %in% Genome.Seqinfo.SeqName)){
+  if(!is.null(Common.SeqName) && all(Common.SeqName %in% Genome.Seqinfo.SeqName)){
     
     ############
     ## 4.格式化需要绘制的基因组序列相关的位置信息
@@ -166,7 +333,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
     })
     
     ############
-    ## 7.格式话返回的可视化结果
+    ## 7.格式化返回的可视化结果
     ############
     Auto.Marge <- as.logical(Auto.Marge)
     if(length(Auto.Marge) == 1){
@@ -198,6 +365,6 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
     }
     
   }else{
-    stop(sprintf("'SeqName'信息应均存在于(%s)", paste0(Genome.Seqinfo.SeqName, collapse = ", ")))
+    stop(sprintf("'Point.Data'或'Segment.Data'的'SeqName'不能为Null且元素应均存在于(%s)", paste0(Genome.Seqinfo.SeqName, collapse = ", ")))
   }
 }
