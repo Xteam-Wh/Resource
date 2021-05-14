@@ -42,14 +42,14 @@ Venn.View <- function(..., Sets.List = NULL,
     ############
     ## 1.参数判断与预处理
     ############
-    Show.Percentage <- as.logical(Show.Percentage)
-    if(length(Show.Percentage) != 1){
-      stop("'Show.Percentage'应为单一的logical值 ...")
-    }
-    
     Show.Set.Total <- as.logical(Show.Set.Total)
     if(length(Show.Set.Total) != 1){
       stop("'Show.Set.Total'应为单一的logical值 ...")
+    }
+    
+    Show.Percentage <- as.logical(Show.Percentage)
+    if(length(Show.Percentage) != 1){
+      stop("'Show.Percentage'应为单一的logical值 ...")
     }
     
     Sets.Name <- as.character(Sets.Name)
