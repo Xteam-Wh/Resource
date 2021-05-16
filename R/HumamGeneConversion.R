@@ -31,7 +31,6 @@ Humam.Gene.Conversion.Local <- function(Values,
            }else{
              stop("'Values.Type'应为单一的character值 ...")
            }
-           
            # 判断用户输入的Conversion.Type是否符合条件
            Conversion.Type <- as.character(Conversion.Type)
            if(length(Conversion.Type) > 0){
@@ -110,7 +109,6 @@ Humam.Gene.Conversion.Internet <- function(Values,
            }else{
              stop("'Values.Type'应为单一的character值 ...")
            }
-           
            # 判断用户输入的Conversion.Type是否符合条件
            Conversion.Type <- as.character(Conversion.Type)
            if(length(Conversion.Type) > 0){

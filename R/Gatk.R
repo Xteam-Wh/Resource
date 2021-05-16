@@ -54,7 +54,6 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
       on.exit(expr = {unlink(Sample.Temp.Output, force = TRUE)}, add = TRUE)
       Gatk.GetSampleName.Command <- sprintf("%s --output \"%s\"", Gatk.GetSampleName.Command, Sample.Temp.Output)
       
-      
       # 根据操作系统环境设置脚本内容
       Gatk.GetSampleName.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Gatk.GetSampleName.Command)
       # 根据操作系统环境设置脚本文件

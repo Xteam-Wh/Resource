@@ -67,9 +67,6 @@ Statistical.Test.TableDiff <- function(Data,
                 Fisher = fisher.test(Data, alternative = Fisher.Alternative)$p.value
         )
       )
-      
-      
-      
     }else{
       stop("'Chisq.Correct'应为单一的logical值 ...")
     }

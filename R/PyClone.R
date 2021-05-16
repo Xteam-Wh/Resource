@@ -150,7 +150,6 @@ PyClone.Run <- function(PyClone.Input,
         }
       }
       
-      
       # 配置PyClone.Output.Dir[--working_dir]
       PyClone.Output.Dir <- as.character(PyClone.Output.Dir)
       if(length(PyClone.Output.Dir) == 0){
