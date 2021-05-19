@@ -328,7 +328,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
           stop("当前数据'Color.Map'应为NULL或与‘Feature.Type’包含的元素种类相对应的character向量 ...")
         }
       }
-      Feature.Plot <- Feature.Plot + labs(x = NULL, y = Feature.Data$Feature.Name) +  coord_cartesian(clip = "off") + theme_test()
+      Feature.Plot <- Feature.Plot + labs(x = NULL, y = Feature.Data$Feature.Name) + theme_test()
       return(Feature.Plot)
     })
     
