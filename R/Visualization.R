@@ -11,25 +11,25 @@
 ##' @param Show.Set.Total logical 是否统计各集合的元素数量并显示在集合标签尾部
 ##' @param Show.Percentage logical 是否计算各交集元素所占总元素数量的百分比并标注在交集标签下方
 ##' @param Sets.Name character[] 单独指定每个集合的名称向量，用于设置集合标签
-##' @param Sets.Fill.Color character[] 单独指定每个集合的填充颜色向量
+##' @param Sets.Fill.Colour character[] 单独指定每个集合的填充颜色向量
 ##' @param Sets.Fill.Opacity numeric 设置集合的填充颜色的透明度
 ##' @param Sets.Name.Size numeric 设置集合标签的尺寸
-##' @param Sets.Name.Color numeric 设置集合标签的颜色
+##' @param Sets.Name.Colour numeric 设置集合标签的颜色
 ##' @param Sets.Name.Opacity numeric 设置集合标签颜色的透明的
 ##' @param Stroke.Size numeric 设置集合边缘线的尺寸
-##' @param Stroke.Color numeric 设置合边缘线的颜色
+##' @param Stroke.Colour numeric 设置合边缘线的颜色
 ##' @param Stroke.Opacity numeric 设置合边缘线颜色的透明的
 ##' @param Stroke.Linetype numeric | character 设置合边缘线的线型
 ##' @param Intersection.Label.Size numeric 设置交集标签的尺寸
-##' @param Intersection.Label.Color numeric 设置交集标签的颜色
+##' @param Intersection.Label.Colour numeric 设置交集标签的颜色
 ##' @param Intersection.Label.Opacity numeric 设置交集标签颜色的透明的
 ##' @return 返回venn图的绘图信息
 Venn.View <- function(..., Sets.List = NULL, 
                       Show.Set.Total = FALSE, Show.Percentage = FALSE, 
-                      Sets.Name = NULL, Sets.Fill.Color = NULL, Sets.Fill.Opacity = 0.5,
-                      Sets.Name.Size = 5, Sets.Name.Color = "DarkSlateGray", Sets.Name.Opacity = 1, 
-                      Stroke.Size = 1, Stroke.Color = NULL, Stroke.Opacity = 1, Stroke.Linetype = "solid", 
-                      Intersection.Label.Size = 3, Intersection.Label.Color = "DarkSlateGray", Intersection.Label.Opacity = 1){
+                      Sets.Name = NULL, Sets.Fill.Colour = NULL, Sets.Fill.Opacity = 0.5,
+                      Sets.Name.Size = 5, Sets.Name.Colour = "DarkSlateGray", Sets.Name.Opacity = 1, 
+                      Stroke.Size = 1, Stroke.Colour = NULL, Stroke.Opacity = 1, Stroke.Linetype = "solid", 
+                      Intersection.Label.Size = 3, Intersection.Label.Colour = "DarkSlateGray", Intersection.Label.Opacity = 1){
   ############
   ## 0.集合数据的整合
   ############
@@ -60,11 +60,11 @@ Venn.View <- function(..., Sets.List = NULL,
       stop(sprintf("Sets.Name: 需要的标签数目为【%s】, 给定的标签数目为【%s】 ...", length(Sets.Name), Sets.List.Num))
     }
     
-    Sets.Fill.Color <- as.character(Sets.Fill.Color)
-    if(length(Sets.Fill.Color) == 0){
-      Sets.Fill.Color <- RColorBrewer::brewer.pal(7, "Set2")[1:Sets.List.Num]
-    }else if(length(Sets.Fill.Color) != Sets.List.Num){
-      stop(sprintf("Sets.Fill.Color: 需要的颜色数目为【%s】, 给定的颜色数目为【%s】 ...", length(Sets.Fill.Color), Sets.List.Num))
+    Sets.Fill.Colour <- as.character(Sets.Fill.Colour)
+    if(length(Sets.Fill.Colour) == 0){
+      Sets.Fill.Colour <- RColourBrewer::brewer.pal(7, "Set2")[1:Sets.List.Num]
+    }else if(length(Sets.Fill.Colour) != Sets.List.Num){
+      stop(sprintf("Sets.Fill.Colour: 需要的颜色数目为【%s】, 给定的颜色数目为【%s】 ...", length(Sets.Fill.Colour), Sets.List.Num))
     }
     
     Sets.Fill.Opacity <- as.numeric(Sets.Fill.Opacity)
@@ -77,9 +77,9 @@ Venn.View <- function(..., Sets.List = NULL,
       stop("'Sets.Name.Size'应为大于0的numeric值 ...")
     }
     
-    Sets.Name.Color <- as.character(Sets.Name.Color)
-    if(length(Sets.Name.Color) != 1){
-      stop("'Sets.Name.Color'应为单一的character值 ...")
+    Sets.Name.Colour <- as.character(Sets.Name.Colour)
+    if(length(Sets.Name.Colour) != 1){
+      stop("'Sets.Name.Colour'应为单一的character值 ...")
     }
     
     Sets.Name.Opacity <- as.numeric(Sets.Name.Opacity)
@@ -92,13 +92,13 @@ Venn.View <- function(..., Sets.List = NULL,
       stop("'Stroke.Size'应为大于等于0的numeric值 ...")
     }
     
-    Stroke.Color <- as.character(Stroke.Color)
-    if(length(Stroke.Color) == 0){
-      Stroke.Color <- Sets.Fill.Color
-    }else if(length(Stroke.Color) == 1){
-      Stroke.Color <- rep(Stroke.Color, Sets.List.Num)
+    Stroke.Colour <- as.character(Stroke.Colour)
+    if(length(Stroke.Colour) == 0){
+      Stroke.Colour <- Sets.Fill.Colour
+    }else if(length(Stroke.Colour) == 1){
+      Stroke.Colour <- rep(Stroke.Colour, Sets.List.Num)
     }else{
-      stop("'Stroke.Color'应为Null或单一的character值 ...")
+      stop("'Stroke.Colour'应为Null或单一的character值 ...")
     }
     
     Stroke.Opacity <- as.numeric(Stroke.Opacity)
@@ -121,9 +121,9 @@ Venn.View <- function(..., Sets.List = NULL,
       stop("'Intersection.Label.Size'应为大于0的numeric值 ...")
     }
     
-    Intersection.Label.Color <- as.character(Intersection.Label.Color)
-    if(length(Intersection.Label.Color) != 1){
-      stop("'Intersection.Label.Color'应为单一的character值 ...")
+    Intersection.Label.Colour <- as.character(Intersection.Label.Colour)
+    if(length(Intersection.Label.Colour) != 1){
+      stop("'Intersection.Label.Colour'应为单一的character值 ...")
     }
     
     Intersection.Label.Opacity <- as.numeric(Intersection.Label.Opacity)
@@ -134,7 +134,7 @@ Venn.View <- function(..., Sets.List = NULL,
     ############
     ## 2.获取ggplot格式的venn图信息并对其进行修改
     ############
-    plot <- venn::venn(Sets.List, zcolor = Sets.Fill.Color, ilabels = TRUE, opacity = Sets.Fill.Opacity, box = FALSE, ggplot = TRUE)
+    plot <- venn::venn(Sets.List, zcolour = Sets.Fill.Colour, ilabels = TRUE, opacity = Sets.Fill.Opacity, box = FALSE, ggplot = TRUE)
     Layers.Num <- length(plot$layers)
     Layers.Fill.Index <- 1:Sets.List.Num + 1
     Layers.Name.Index <- tail(1:Layers.Num, Sets.List.Num)
@@ -145,15 +145,15 @@ Venn.View <- function(..., Sets.List = NULL,
       if(Index %in% Layers.Name.Index){
         Layer$aes_params$size <- Sets.Name.Size
         Layer$aes_params$label <- Sets.Name[Layers.Name.Index == Index]
-        Layer$aes_params$colour <- scales::alpha(Sets.Name.Color, Sets.Name.Opacity)
+        Layer$aes_params$colour <- scales::alpha(Sets.Name.Colour, Sets.Name.Opacity)
         if(Show.Set.Total){ Layer$aes_params$label <- sprintf("%s(%s)", Layer$aes_params$label, length(Sets.List[[which(Layers.Name.Index == Index)]])) }
       }else if(Index %in% Layers.Stroke.Index){
         Layer$aes_params$size <- Stroke.Size
         Layer$aes_params$linetype <- Stroke.Linetype
-        Layer$aes_params$colour <- scales::alpha(Stroke.Color[Layers.Stroke.Index == Index], Stroke.Opacity)
+        Layer$aes_params$colour <- scales::alpha(Stroke.Colour[Layers.Stroke.Index == Index], Stroke.Opacity)
       }else if(Index %in% Layers.Intersection.Index){
         Layer$aes_params$size <- Intersection.Label.Size
-        Layer$aes_params$colour <- scales::alpha(Intersection.Label.Color, Intersection.Label.Opacity)
+        Layer$aes_params$colour <- scales::alpha(Intersection.Label.Colour, Intersection.Label.Opacity)
         if(Show.Percentage){ Layer$aes_params$label <- paste0(sprintf("%s\n%.3f", Layer$aes_params$label, as.numeric(Layer$aes_params$label)/Sets.List.Member.Num), "%") }
       }
       return(Layer)
@@ -179,14 +179,14 @@ Venn.View <- function(..., Sets.List = NULL,
 ############' $Point.Size numeric 设置点的尺寸
 ############' $Point.Shape numeric | character 设置点型
 ############' $Point.Alpha numeric 设置点的透明度
-############' $Point.Color character 设置点的颜色
+############' $Point.Colour character 设置点的颜色
 ############' $Point.Fill character 设置点的填充色
 ############' $Point.Stroke numeric 设置点的边缘线尺寸
 ############' $Segment.Size numeric 设置线段的尺寸
 ############' $Segment.Alpha numeric 设置线段的透明度
-############' $Segment.Color character 设置线段的颜色
+############' $Segment.Colour character 设置线段的颜色
 ############' $Segment.LineType numeric | character 设置线段的线型
-############' $Color.Map characte[] 颜色映射集合, 与"Feature.Type"包含的元素种类相对应
+############' $Colour.Map characte[] 颜色映射集合, 与"Feature.Type"包含的元素种类相对应
 ##' @param Feature.List.Data list 特征list数据集合，每个特征信号对应一个list, 每个list包含的元素与可变参数(...)传入的每个list一致
 ##' @param Auto.Marge logical 是否自动对各图表进行合并
 ##' @param SeqName.Ratio numeric 指定组合图标中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE是生效
@@ -245,8 +245,8 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
           if(is.null(Feature.Data$Point.Shape)){ Feature.Data$Point.Shape = 20 }
           if(is.null(Feature.Data$Point.Stroke)){ Feature.Data$Point.Stroke = 1 }
           if(is.null(Feature.Data$Point.Alpha)){ Feature.Data$Point.Alpha = 0.66 }
-          if(is.null(Feature.Data$Point.Color)){ Feature.Data$Point.Color = "DarkSlateGray" }
-          if(is.null(Feature.Data$Point.Fill)){ Feature.Data$Point.Fill = Feature.Data$Point.Color }
+          if(is.null(Feature.Data$Point.Colour)){ Feature.Data$Point.Colour = "DarkSlateGray" }
+          if(is.null(Feature.Data$Point.Fill)){ Feature.Data$Point.Fill = Feature.Data$Point.Colour }
           Feature.Data$Point.Data$Position  <- Feature.Data$Point.Data$Position + Common.SeqName.Accumulate.Before.Map[Feature.Data$Point.Data$SeqName]
         }
         if(! is.null(Feature.Data$Segment.Data)){
@@ -254,7 +254,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
           if(is.null(Feature.Data$Segment.Size)){ Feature.Data$Segment.Size = 1 }
           if(is.null(Feature.Data$Segment.Alpha)){ Feature.Data$Segment.Alpha = 0.66 }
           if(is.null(Feature.Data$Segment.LineType)){ Feature.Data$Segment.LineType = "solid" }
-          if(is.null(Feature.Data$Segment.Color)){ Feature.Data$Segment.Color = ifelse(is.null(Feature.Data$Point.Data), "DarkSlateGray", "OrangeRed") }
+          if(is.null(Feature.Data$Segment.Colour)){ Feature.Data$Segment.Colour = ifelse(is.null(Feature.Data$Point.Data), "DarkSlateGray", "OrangeRed") }
           Feature.Data$Segment.Data$Position.End  <- Feature.Data$Segment.Data$Position.End + Common.SeqName.Accumulate.Before.Map[Feature.Data$Segment.Data$SeqName]
           Feature.Data$Segment.Data$Position.Start  <- Feature.Data$Segment.Data$Position.Start + Common.SeqName.Accumulate.Before.Map[Feature.Data$Segment.Data$SeqName]
         }
@@ -309,23 +309,23 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
         scale_fill_manual(values = setNames(sapply(seq_along(Common.SeqName.Info$SeqName), function(i){ifelse(i %% 2 == 0, 'gray', 'black')}), nm = Common.SeqName.Info$SeqName))
       if(! is.null(Point.Data)){
         if(is.null(Point.Data$Feature.Type)){
-          Feature.Plot <- Feature.Plot + geom_point(data = Point.Data, aes(x = Position, y = Feature.Value), color = Feature.Data$Point.Color, shape = Feature.Data$Point.Shape, fill = Feature.Data$Point.Fill, stroke = Feature.Data$Point.Stroke, size = Feature.Data$Point.Size, alpha = Feature.Data$Point.Alpha)
+          Feature.Plot <- Feature.Plot + geom_point(data = Point.Data, aes(x = Position, y = Feature.Value), colour = Feature.Data$Point.Colour, shape = Feature.Data$Point.Shape, fill = Feature.Data$Point.Fill, stroke = Feature.Data$Point.Stroke, size = Feature.Data$Point.Size, alpha = Feature.Data$Point.Alpha)
         }else{
-          Feature.Plot <- Feature.Plot + geom_point(data = Point.Data, aes(x = Position, y = Feature.Value, color = Feature.Type), shape = Feature.Data$Point.Shape, fill = Feature.Data$Point.Fill, stroke = Feature.Data$Point.Stroke, size = Feature.Data$Point.Size, alpha = Feature.Data$Point.Alpha)
+          Feature.Plot <- Feature.Plot + geom_point(data = Point.Data, aes(x = Position, y = Feature.Value, colour = Feature.Type), shape = Feature.Data$Point.Shape, fill = Feature.Data$Point.Fill, stroke = Feature.Data$Point.Stroke, size = Feature.Data$Point.Size, alpha = Feature.Data$Point.Alpha)
         }
       }
       if(! is.null(Segment.Data)){
         if(is.null(Segment.Data$Feature.Type)){
-          Feature.Plot <- Feature.Plot + geom_segment(data = Segment.Data, aes(x = Position.Start, y = Feature.Value, xend = Position.End, yend = Feature.Value), color = Feature.Data$Segment.Color, size = Feature.Data$Segment.Size, alpha = Feature.Data$Segment.Alpha, linetype = Feature.Data$Segment.LineType)
+          Feature.Plot <- Feature.Plot + geom_segment(data = Segment.Data, aes(x = Position.Start, y = Feature.Value, xend = Position.End, yend = Feature.Value), colour = Feature.Data$Segment.Colour, size = Feature.Data$Segment.Size, alpha = Feature.Data$Segment.Alpha, linetype = Feature.Data$Segment.LineType)
         }else{
-          Feature.Plot <- Feature.Plot + geom_segment(data = Segment.Data, aes(x = Position.Start, y = Feature.Value, xend = Position.End, yend = Feature.Value, color = Feature.Type), size = Feature.Data$Segment.Size, alpha = Feature.Data$Segment.Alpha, linetype = Feature.Data$Segment.LineType)
+          Feature.Plot <- Feature.Plot + geom_segment(data = Segment.Data, aes(x = Position.Start, y = Feature.Value, xend = Position.End, yend = Feature.Value, colour = Feature.Type), size = Feature.Data$Segment.Size, alpha = Feature.Data$Segment.Alpha, linetype = Feature.Data$Segment.LineType)
         }
       }
-      if(!is.null(Feature.Data$Color.Map) && !(is.null(Point.Data$Feature.Type) && is.null(Segment.Data$Feature.Type))){
-        if("character" %in% class(Feature.Data$Color.Map) && length(Feature.Data$Color.Map) == length(unique(c(Point.Data$Feature.Type, Segment.Data$Feature.Type)))){
-          Feature.Plot <- Feature.Plot + scale_color_manual(values = Feature.Data$Color.Map)
+      if(!is.null(Feature.Data$Colour.Map) && !(is.null(Point.Data$Feature.Type) && is.null(Segment.Data$Feature.Type))){
+        if("character" %in% class(Feature.Data$Colour.Map) && length(Feature.Data$Colour.Map) == length(unique(c(Point.Data$Feature.Type, Segment.Data$Feature.Type)))){
+          Feature.Plot <- Feature.Plot + scale_colour_manual(values = Feature.Data$Colour.Map)
         }else{
-          stop("当前数据'Color.Map'应为NULL或与‘Feature.Type’包含的元素种类相对应的character向量 ...")
+          stop("当前数据'Colour.Map'应为NULL或与‘Feature.Type’包含的元素种类相对应的character向量 ...")
         }
       }
       Feature.Plot <- Feature.Plot + labs(x = NULL, y = Feature.Data$Feature.Name) + theme_test()
