@@ -275,8 +275,8 @@ Annovar.Run <- function(Annovar.Input, Database,
       if(length(Output.Prefix) == 0){
         Output.Prefix <- sprintf("%s/Annovar.Result", getwd())
       }else if(length(Output.Prefix) == 1){
-        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = Output.Prefix), winslash = "/", mustWork = FALSE)
-        dir.create(substr(Output.Prefix, 1, attr(x = regexpr("^.*/", Output.Prefix), which = "match.length")), recursive = TRUE, showWarnings = FALSE)
+        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
+        dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
         stop("'Output.Prefix'应为Null或单一的character值 ...")
       }

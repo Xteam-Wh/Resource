@@ -210,8 +210,8 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
       if(length(Output.Prefix) == 0){
         Output.Prefix <- sprintf("%s/Gatk.Mutect2", getwd())
       }else if(length(Output.Prefix) == 1){
-        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = Output.Prefix), winslash = "/", mustWork = FALSE)
-        dir.create(substr(Output.Prefix, 1, attr(x = regexpr("^.*/", Output.Prefix), which = "match.length")), recursive = TRUE, showWarnings = FALSE)
+        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
+        dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
         stop("'Output.Prefix'应为Null或单一的character值 ...")
       }
@@ -340,8 +340,8 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
       if(length(Output.Prefix) == 0){
         Output.Prefix <- sprintf("%s/Gatk.LearnReadOrientationModel", getwd())
       }else if(length(Output.Prefix) == 1){
-        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = Output.Prefix), winslash = "/", mustWork = FALSE)
-        dir.create(substr(Output.Prefix, 1, attr(x = regexpr("^.*/", Output.Prefix), which = "match.length")), recursive = TRUE, showWarnings = FALSE)
+        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
+        dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
         stop("'Output.Prefix'应为Null或单一的character值 ...")
       }
@@ -460,8 +460,8 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
       if(length(Output.Prefix) == 0){
         Output.Prefix <- sprintf("%s/Gatk.GetPileupSummaries", getwd())
       }else if(length(Output.Prefix) == 1){
-        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = Output.Prefix), winslash = "/", mustWork = FALSE)
-        dir.create(substr(Output.Prefix, 1, attr(x = regexpr("^.*/", Output.Prefix), which = "match.length")), recursive = TRUE, showWarnings = FALSE)
+        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
+        dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
         stop("'Output.Prefix'应为Null或单一的character值 ...")
       }
@@ -583,8 +583,8 @@ Gatk.CalculateContamination <- function(Gatk.Local.Jar,
       if(length(Output.Prefix) == 0){
         Output.Prefix <- sprintf("%s/Gatk.CalculateContamination", getwd())
       }else if(length(Output.Prefix) == 1){
-        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = Output.Prefix), winslash = "/", mustWork = FALSE)
-        dir.create(substr(Output.Prefix, 1, attr(x = regexpr("^.*/", Output.Prefix), which = "match.length")), recursive = TRUE, showWarnings = FALSE)
+        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
+        dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
         stop("'Output.Prefix'应为Null或单一的character值 ...")
       }
@@ -741,8 +741,8 @@ Gatk.FilterMutectCalls <- function(Gatk.Local.Jar,
       if(length(Output.Prefix) == 0){
         Output.Prefix <- sprintf("%s/Gatk.FilterMutectCalls", getwd())
       }else if(length(Output.Prefix) == 1){
-        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = Output.Prefix), winslash = "/", mustWork = FALSE)
-        dir.create(substr(Output.Prefix, 1, attr(x = regexpr("^.*/", Output.Prefix), which = "match.length")), recursive = TRUE, showWarnings = FALSE)
+        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
+        dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
         stop("'Output.Prefix'应为Null或单一的character值 ...")
       }

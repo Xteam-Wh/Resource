@@ -155,7 +155,7 @@ PyClone.Run <- function(PyClone.Input,
       if(length(PyClone.Output.Dir) == 0){
         PyClone.Output.Dir <- sprintf("%s/PyClone.Output.Dir", getwd())
       }else if(length(PyClone.Output.Dir) == 1){
-        PyClone.Output.Dir <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = PyClone.Output.Dir), winslash = "/", mustWork = FALSE)
+        PyClone.Output.Dir <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(PyClone.Output.Dir)), winslash = "/", mustWork = FALSE)
       }else{
         stop("'PyClone.Output.Dir'应为单一的目录路径 ...")
       }
