@@ -8,10 +8,10 @@
 ##' @author Xteam.Wh
 ##' @param ... character[] 每个向量为一个集合
 ##' @param Sets.List list 集合列表, 每一个元素为一个向量
-##' @param Show.Set.Total logical 是否统计各集合的元素数量并显示在集合标签尾部
-##' @param Show.Percentage logical 是否计算各交集元素所占总元素数量的百分比并标注在交集标签下方
-##' @param Sets.Name character[] 单独指定每个集合的名称向量，用于设置集合标签
-##' @param Sets.Fill.Colour character[] 单独指定每个集合的填充颜色向量
+##' @param Show.Set.Total logical 设置是否统计各集合的元素数量并显示在集合标签尾部
+##' @param Show.Percentage logical 设置是否计算各交集元素所占总元素数量的百分比并标注在交集标签下方
+##' @param Sets.Name character[] 设置每个集合名称的向量，用于设置集合标签
+##' @param Sets.Fill.Colour character[] 的每个集合填充颜色的向量
 ##' @param Sets.Fill.Opacity numeric 设置集合的填充颜色的透明度
 ##' @param Sets.Name.Size numeric 设置集合标签的尺寸
 ##' @param Sets.Name.Colour numeric 设置集合标签的颜色
@@ -169,7 +169,6 @@ Venn.View <- function(..., Sets.List = NULL,
 }
 
 
-
 ##' @description 对基因组上的信号特征(点和线段)进行可视化(至少可视化一条基因组版本包含的序列)
 ##' @author Xteam.Wh
 ##' @param ... list 每个list包含以下元素(其中至少要包含Point.Data与Segment.Data其中的一项, 否则将被从队列中移除)：
@@ -186,11 +185,11 @@ Venn.View <- function(..., Sets.List = NULL,
 ############' $Segment.Alpha numeric 设置线段的透明度
 ############' $Segment.Colour character 设置线段的颜色
 ############' $Segment.LineType numeric | character 设置线段的线型
-############' $Colour.Map characte[] 颜色映射集合, 与"Feature.Type"包含的元素种类相对应
+############' $Colour.Map characte[] 设置颜色映射集合, 与"Feature.Type"包含的元素种类相对应
 ##' @param Feature.List.Data list 特征list数据集合，每个特征信号对应一个list, 每个list包含的元素与可变参数(...)传入的每个list一致
-##' @param Auto.Marge logical 是否自动对各图表进行合并
-##' @param SeqName.Ratio numeric 指定组合图标中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE是生效
-##' @param Genome.Assemblies character 基因组版本号, 可选unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))
+##' @param Auto.Marge logical 设置是否自动对各图表进行合并
+##' @param SeqName.Ratio numeric 设置组合图标中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE是生效
+##' @param Genome.Assemblies character 设置基因组版本号, 可选unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))
 ##' @return 若Auto.Marge = TRUE, 则返回组合后的绘图信息; 若Auto.Marge = FALSE, 则返每个特征信号的绘图信息以及上下基因组条段绘图信息
 Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqName.Ratio = 0.125,  
                         Genome.Assemblies = unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))){
