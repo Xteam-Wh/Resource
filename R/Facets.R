@@ -1,13 +1,13 @@
 ##############################函数描述##############################
-# “Facets.SNP.Pileup”通过R函数传参调用SNP Pileup统计来自同一个体的正常样本和肿瘤样本在SNP位点处的[参考、替代、错误、缺失]的read数
+# “Facets.SNP.Pileup”通过R函数传参调用SNP Pileup统计正常样本和肿瘤样本在SNP位点处的[参考、替代、错误、缺失]的read数
 # "Facets.CNV.Calling"通过Facets包通过SNP Pileup结果推断等位特异拷贝数
 ####################################################################
 
 
-##' @description 通过R函数传参调用SNP Pileup统计来自同一个体的正常样本和肿瘤样本在SNP位点处的[参考、替代、错误、缺失]的read数
-##' @param Tumor.Bam character 来自同一个体的肿瘤样本对应的bam文件
-##' @param Normal.Bam character 来自同一个体的正常样本对应的bam文件
-##' @param Common.Vcf character 常见的多态SNP的VCF文件(一个很好的来源是dbSNP的common_all.vcf.gz)
+##' @description 通过R函数传参调用SNP Pileup统计正常样本和肿瘤样本在SNP位点处的[参考、替代、错误、缺失]的read数
+##' @param Tumor.Bam character 肿瘤样本对应的bam文件(建议提前进行coordinate排序处理)
+##' @param Normal.Bam character 正常样本对应的bam文件(建议提前进行coordinate排序处理)
+##' @param Common.Vcf character 常见的多态SNP的VCF文件(一个很好的来源是dbSNP的common_all.vcf.gz, 建议提前进行与bam文件进行一致的coordinate排序处理)
 ##' @param Output.Prefix character 结果文件(csv格式)前缀[可携带路径]; 默认为当前工作目录下的"Facets.SNP-Pileup"
 ##' @param Sort.Operation character 设置对Tumor.Bam、Normal.Bam、Common.Vcf进行排序操作的方式, 可选("Auto", "Sort", "None"); 默认"Auto"即交由程序自行判断并排序
 ##' @param Show.Progress logical 设置是否显示SNP Pileup的进度条(需要先统计SNP数量，增加程序的运行时间); 默认为FALSE
@@ -144,12 +144,12 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
             if(nchar(Sys.which(System.Bedtools.Alias)) > 0){
               Tumor.Bam.SeqName.Order <- system(sprintf("\"%s\" view -H \"%s\" | grep ^@SQ | cut -f 2 | tr -d \"SN:\" | uniq", System.Samtools.Alias, Tumor.Bam), intern = TRUE)
               Normal.Bam.SeqName.Order <- system(sprintf("\"%s\" view -H \"%s\" | grep ^@SQ | cut -f 2 | tr -d \"SN:\" | uniq", System.Samtools.Alias, Normal.Bam), intern = TRUE)
-              if(all(Tumor.Bam.SeqName.Order == Normal.Bam.SeqName.Order)){
+              if(all(intersect(Tumor.Bam.SeqName.Order, Normal.Bam.SeqName.Order) == intersect(Normal.Bam.SeqName.Order, Tumor.Bam.SeqName.Order))){
                 Common.Vcf.SeqName.Order <- system(sprintf("awk '{print $1}' \"%s\" | grep -v \"^#\" | uniq", Common.Vcf), intern = TRUE)
                 if(any(grepl("^chr([1-9]|1[0-9]|2[0-2]|[MXY]|MT)$", Common.Vcf.SeqName.Order))){
-                  Bam.SeqName.Order <- intersect(Tumor.Bam.SeqName.Order, Normal.Bam.SeqName.Order)
+                  Bam.SeqName.Order <- union(Tumor.Bam.SeqName.Order, Normal.Bam.SeqName.Order)
                 }else{
-                  Bam.SeqName.Order <- gsub(pattern = "^chr", "", intersect(Tumor.Bam.SeqName.Order, Normal.Bam.SeqName.Order))
+                  Bam.SeqName.Order <- gsub(pattern = "^chr", "", union(Tumor.Bam.SeqName.Order, Normal.Bam.SeqName.Order))
                 }
                 switch(Sort.Operation, 
                        Auto = {
@@ -190,7 +190,7 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
                          File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ...\"\n\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"\n", File.Order.Command, Common.Vcf, System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Common.Sorted.Vcf)
                        })
               }else{
-                stop(sprintf("'%s'与'%s'的参考基因组信息(@SQ)不一致 ...", Tumor.Bam, Normal.Bam))
+                stop(sprintf("'%s'与'%s'的共有的参考基因组比对信息(@SQ)不一致 ...", Tumor.Bam, Normal.Bam))
               }
             }else{
               stop(sprintf("非系统的可执行命令'%s' ...", System.Samtools.Alias))
@@ -250,21 +250,26 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
 
 ##' @description 通过Facets包通过SNP Pileup结果推断等位特异拷贝数
 ##' @param SNP.Pileup.Input character SNP Pileup的结果文件, 可通过函数Facets.SNP.Pileup获得
+##' @param Tumor.Normal.Matched logical 设置SNP.Pileup.Input中正常样本和肿瘤样本是否来自同一个体(影响杂合性SNP的判定); 默认TRUE
+##' @param LogOR.Powerful logical 设置LogOR是否应在分段和聚类的过程中占据更多权重(增加检测杂合性SNP少的区域的等位基因失衡的能力); 默认TRUE
+##' @param Show.Plot logica 设置是否绘制基因组图示(包括LogR、LogOR、CNV); 默认TRUE
+##' @param Genome.Assemblies character 设置基因组版本号, 可选c("hg18", "hg19", "hg38", "mm9", "mm10", "udef")
+##' @param Udef.GC.List list 设置基因组GC含量列表(当且仅当Genome.Assemblies为"udef"时生效), 其名称与它来自的序列(染色体)相对应, 数字向量给出了不长为100bp窗口大小为1000bp的GC含量
 ##' @param Err.Thresh numeric 设置SNP位点发生错误替代的read计数阈值, SNP Pileup结果中超过该值的记录将被去除; 默认Inf
 ##' @param Del.Thresh numeric 设置SNP位点发生缺失的read计数阈值, SNP Pileup结果中超过该值的记录将被去除; 默认Inf
 ##' @param Min.Depth numeric 设置最小深度, 数据预处理时总read计数小于该值的记录将被去除; 默认35
 ##' @param Max.Depth numeric 设置最大深度, 数据预处理时总read计数大于该值的记录将被去除; 默认1000
-##' @param SNP.Het.VAF numeric 设置SNP位点被判定为杂合位点的阈值, 正常样本VAF介于(SNP.Het.VAF, 1 - SNP.Het.VAF)之间的SNP被判定为杂合; 默认0.25
-##' @param Bin.Size numeric 设置窗口大小, 每个窗口将随机选择一个SNP位点(优先选择杂合位点)进行后续分析(基因组中的SNP不是均匀分布的, 使用所有位点将导致数据中的序列相关)
-##' @param Segment.Min.Het numeric 设置分析次拷贝数时基因组片段至少应该具有的杂合性SNP位点的数量(当一个片段的杂 SNP少于Segment.Min.Het时，可能无法可靠地估计次要拷贝数，因此将返回); 默认15
+##' @param SNP.Het.VAF numeric 设置SNP位点被判定为杂合位点的阈值, 正常样本VAF介于(SNP.Het.VAF, 1 - SNP.Het.VAF)之间的SNP被判定为杂合; 若Tumor.Normal.Matched为FALSE, 该值应小于等于0.1, 此时肿瘤样本VAF介于(SNP.Het.VAF, 1 - SNP.Het.VAF)之间且总read数大于等于50的SNP被判定为杂合; 默认0.25
+##' @param Bin.Size numeric 设置窗口大小, 每个窗口将随机选择一个SNP位点(优先选择杂合位点)进行后续分析(基因组中的SNP不是均匀分布的, 使用所有位点将导致数据中的序列相关); 默认250
+##' @param Segmentation.Critical.Value numeric[] 设置片段分割过程中断点识别的T2临界值以及后期用于断点筛选的T2临界值; 默认c(25, 150)
+##' @param Segment.Min.Het numeric 设置分析次拷贝数时基因组片段至少应该具有的杂合性SNP位点的数量(当一个片段的杂合性SNP少于Segment.Min.Het时，可能无法有效地估计次要拷贝数，因此将返回NA); 默认15
 ##' @param EM.Max.Iter numeric 设置期望最大化算法最大的迭代次数; 默认10
 ##' @param EM.Con.Thresh numeric 设置在EM.Max.Iter内达到终止条件的收敛阈值; 默认0.001
-##' @param Genome.Assemblies character 设置基因组版本号, 可选c("hg18", "hg19", "hg38", "mm9", "mm10", "udef")
-##' @param Show.Plot logica 设置是否绘制基因组图示(包括LogR、LogOR、CNV)
-##' @return list 包含肿瘤纯度、倍性、位点的估计信息[SeqName、Position、LogR、LogOR]以及片段的估计信息[SeqName、Position.Start、Position.End、LogR.Mean、LogOR.Mean.Abs、CN.Total、CN.Minor]
+##' @return list 包含肿瘤纯度、倍性、位点的估计信息[SeqName、Position、LogR、LogOR]以及片段的估计信息[SeqName、Position.Start、Position.End、LogR、LogOR.Square、CN.Total、CN.Minor、Cell.Fraction]
 Facets.CNV.Calling <- function(SNP.Pileup.Input, 
-                               Genome.Assemblies = c("hg18", "hg19", "hg38", "mm9", "mm10", "udef"), Err.Thresh = Inf, Del.Thresh = Inf, 
-                               Min.Depth = 35, Max.Depth = 1000, SNP.Het.VAF = 0.25, Bin.Size = 250, Segment.Min.Het = 15, EM.Max.Iter = 10, EM.Con.Thresh = 0.001, Show.Plot = TRUE){
+                               Tumor.Normal.Matched = TRUE, LogOR.Powerful = TRUE, Show.Plot = TRUE, 
+                               Genome.Assemblies = c("hg18", "hg19", "hg38", "mm9", "mm10", "udef"), Udef.GC.List = NULL, Err.Thresh = Inf, Del.Thresh = Inf, 
+                               Min.Depth = 35, Max.Depth = 1000, SNP.Het.VAF = 0.25, Bin.Size = 250, Segmentation.Critical.Value = c(25, 150), Segment.Min.Het = 15, EM.Max.Iter = 10, EM.Con.Thresh = 0.001){
   library(facets)
   SNP.Pileup.Input <- as.character(SNP.Pileup.Input)
   if(length(SNP.Pileup.Input) == 1 && file.exists(SNP.Pileup.Input)){
@@ -272,6 +277,21 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
     ############
     ## 1.参数判断
     ############
+    Tumor.Normal.Matched <- as.logical(Tumor.Normal.Matched)
+    if(length(Tumor.Normal.Matched) != 1){
+      stop("'Tumor.Normal.Matched'应为单一的logical值 ...")
+    }
+    
+    LogOR.Powerful <- as.logical(LogOR.Powerful)
+    if(length(LogOR.Powerful) != 1){
+      stop("'LogOR.Powerful'应为单一的logical值 ...")
+    }
+    
+    Show.Plot <- as.logical(Show.Plot)
+    if(length(Show.Plot) != 1){
+      stop("'Show.Plot'应为单一的logical值 ...")
+    }
+    
     Err.Thresh <- as.numeric(Err.Thresh)
     if(length(Err.Thresh) != 1 || ! (is.infinite(Err.Thresh) || (Err.Thresh >= 0 && Err.Thresh %% 1 == 0))){
       stop("'Err.Thresh'应为Inf或单一的大于等于0的整型numeric值 ...")
@@ -295,11 +315,20 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
     SNP.Het.VAF <- as.numeric(SNP.Het.VAF)
     if(length(SNP.Het.VAF) != 1 || SNP.Het.VAF < 0 || SNP.Het.VAF >= 0.5){
       stop("'SNP.Het.VAF'应为单一的介于[0,0.5)之间的numeric值 ...")
+    }else{
+      if(! Tumor.Normal.Matched && SNP.Het.VAF > 0.1){
+        stop("'Tumor.Normal.Matched'为FALSE, 'SNP.Het.VAF'应为单一的介于[0,0.1]之间的numeric值 ...")
+      }
     }
     
     Bin.Size <- as.numeric(Bin.Size)
     if(length(Bin.Size) != 1 || Bin.Size < 0 || Bin.Size %% 1 != 0){
       stop("'Bin.Size'应为单一的大于等于0的整型numeric值 ...")
+    }
+    
+    Segmentation.Critical.Value <- as.numeric(Segmentation.Critical.Value)
+    if(length(Segmentation.Critical.Value) != 2 || any(Segmentation.Critical.Value < 0) || Segmentation.Critical.Value[1] > Segmentation.Critical.Value[2]){
+      stop("'Segmentation.Critical.Value'应为包含两个元素的numeric向量, 要求每个元素均大于等于0且第二元素大于等于第一元素 ...")
     }
     
     Segment.Min.Het <- as.numeric(Segment.Min.Het)
@@ -317,11 +346,6 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
       stop("'EM.Con.Thresh'应为单一的大于0的numeric值 ...")
     }
     
-    Show.Plot <- as.logical(Show.Plot)
-    if(length(Show.Plot) != 1){
-      stop("'Show.Plot'应为单一的logical值 ...")
-    }
-    
     ############
     ## 2.数据预处理以及拷贝数的估计
     ############
@@ -332,9 +356,9 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
     Mtr.Chrom.Character <- SNP.Read.Mtr[! Chrom.Is.Numeric, ]
     SNP.Read.Mtr <- rbind(Mtr.Chrom.Numeric[order(as.numeric(Mtr.Chrom.Numeric$Chromosome)), ], Mtr.Chrom.Character[order(Mtr.Chrom.Character$Chromosome), ])
     # 数据预处理(计算LogR与LogOR值, 将SNP位点片段化) 
-    Mtr.Processes <- preProcSample(SNP.Read.Mtr, gbuild = match.arg(Genome.Assemblies), ndepth = Min.Depth, ndepthmax = Max.Depth, het.thresh = SNP.Het.VAF, snp.nbhd = Bin.Size)
+    Mtr.Processes <- preProcSample(SNP.Read.Mtr, gbuild = match.arg(Genome.Assemblies), ugcpct = as.list(Udef.GC.List), unmatched = !Tumor.Normal.Matched, ndepth = Min.Depth, ndepthmax = Max.Depth, het.thresh = SNP.Het.VAF, snp.nbhd = Bin.Size, hetscale = LogOR.Powerful, cval = Segmentation.Critical.Value[1])
     # 对片段聚类并估计初始的等位特异拷贝数 
-    NV.Fit <- procSample(Mtr.Processes, cval = 150, min.nhet = Segment.Min.Het)
+    NV.Fit <- procSample(Mtr.Processes, cval = Segmentation.Critical.Value[2], min.nhet = Segment.Min.Het)
     # 基于期望最大化算法估计等位特异拷贝数和细胞分数以及肿瘤纯度和倍性
     EM.Fit <- emcncf(NV.Fit, min.nhet = Segment.Min.Het, maxiter = EM.Max.Iter, eps = EM.Con.Thresh)
     
@@ -352,7 +376,7 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
       Purity = EM.Fit[["purity"]],
       Ploidy = EM.Fit[["ploidy"]],
       Point.Data = data.frame(SeqName = NV.Fit$jointseg$chrom, Position = NV.Fit$jointseg$maploc, LogR = NV.Fit$jointseg$cnlr, LogOR = NV.Fit$jointseg$valor),
-      Segment.Data = data.frame(SeqName = EM.Fit$cncf$chrom,  Position.Start = EM.Fit$cncf$start, Position.End = EM.Fit$cncf$end, LogR.Mean = EM.Fit$cncf$cnlr.median, LogOR.Mean.Abs = sqrt(EM.Fit$cncf$mafR), CN.Total = EM.Fit$cncf$tcn.em, CN.Minor = EM.Fit$cncf$lcn.em)
+      Segment.Data = data.frame(SeqName = EM.Fit$cncf$chrom,  Position.Start = EM.Fit$cncf$start, Position.End = EM.Fit$cncf$end, LogR = EM.Fit$cncf$cnlr.median, LogOR.Square = abs(EM.Fit$cncf$mafR), CN.Total = EM.Fit$cncf$tcn.em, CN.Minor = EM.Fit$cncf$lcn.em, Cell.Fraction = EM.Fit$cncf$cf.em)
     ))
     
   }else{

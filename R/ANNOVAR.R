@@ -307,7 +307,7 @@ Annovar.Run <- function(Annovar.Input, Database,
         finally = {
           # 如果脚本文件顺利执行，则Annovar.Command.Run返回的状态信息为0
           if(exists("Annovar.Command.Run") && Annovar.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nAnnovar.Command执行成功, 结果文件已输出至目录'%s.Xxx' ...", Output.Prefix))
+            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nAnnovar.Command执行成功, 结果文件已输出至'%s.Xxx' ...", Output.Prefix))
             unlink(Annovar.Command.File, force = TRUE)
           }else{
             message(sprintf("<<====== ERROR MESSAGE ======>>\nAnnovar.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Annovar.Command.File))
