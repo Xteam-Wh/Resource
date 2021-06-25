@@ -265,7 +265,7 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
 ##' @param Segment.Min.Het numeric 设置分析次拷贝数时基因组片段至少应该具有的杂合性SNP位点的数量(当一个片段的杂合性SNP少于Segment.Min.Het时，可能无法有效地估计次要拷贝数，因此将返回NA); 默认15
 ##' @param EM.Max.Iter numeric 设置期望最大化算法最大的迭代次数; 默认10
 ##' @param EM.Con.Thresh numeric 设置在EM.Max.Iter内达到终止条件的收敛阈值; 默认0.001
-##' @return list 包含肿瘤纯度、倍性、位点的估计信息[SeqName、Position、LogR、LogOR]以及片段的估计信息[SeqName、Position.Start、Position.End、LogR、LogOR.Square、CN.Total、CN.Minor、Cell.Fraction]
+##' @return list 包含肿瘤纯度[Purity]、倍性[Ploidy]、位点的估计信息[SeqName、Position、LogR、LogOR]以及片段的估计信息[SeqName、Position.Start、Position.End、LogR、LogOR.Square、CN.Total、CN.Minor、Cell.Fraction]
 Facets.CNV.Calling <- function(SNP.Pileup.Input, 
                                Tumor.Normal.Matched = TRUE, LogOR.Powerful = TRUE, Show.Plot = TRUE, 
                                Genome.Assemblies = c("hg18", "hg19", "hg38", "mm9", "mm10", "udef"), Udef.GC.List = NULL, Err.Thresh = Inf, Del.Thresh = Inf, 
