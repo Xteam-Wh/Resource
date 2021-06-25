@@ -240,22 +240,30 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
         }
         if(! is.null(Feature.Data$Point.Data)){
           Feature.Data$Point.Data <- as.data.frame(Feature.Data$Point.Data)
-          if(is.null(Feature.Data$Point.Size)){ Feature.Data$Point.Size = 1 }
-          if(is.null(Feature.Data$Point.Shape)){ Feature.Data$Point.Shape = 20 }
-          if(is.null(Feature.Data$Point.Stroke)){ Feature.Data$Point.Stroke = 1 }
-          if(is.null(Feature.Data$Point.Alpha)){ Feature.Data$Point.Alpha = 0.66 }
-          if(is.null(Feature.Data$Point.Colour)){ Feature.Data$Point.Colour = "DarkSlateGray" }
-          if(is.null(Feature.Data$Point.Fill)){ Feature.Data$Point.Fill = Feature.Data$Point.Colour }
-          Feature.Data$Point.Data$Position  <- Feature.Data$Point.Data$Position + Common.SeqName.Accumulate.Before.Map[Feature.Data$Point.Data$SeqName]
+          if(all(c("SeqName", "Position", "Feature.Value") %in% colnames(Feature.Data$Point.Data))){
+            if(is.null(Feature.Data$Point.Size)){ Feature.Data$Point.Size = 1 }
+            if(is.null(Feature.Data$Point.Shape)){ Feature.Data$Point.Shape = 20 }
+            if(is.null(Feature.Data$Point.Stroke)){ Feature.Data$Point.Stroke = 1 }
+            if(is.null(Feature.Data$Point.Alpha)){ Feature.Data$Point.Alpha = 0.66 }
+            if(is.null(Feature.Data$Point.Colour)){ Feature.Data$Point.Colour = "DarkSlateGray" }
+            if(is.null(Feature.Data$Point.Fill)){ Feature.Data$Point.Fill = Feature.Data$Point.Colour }
+            Feature.Data$Point.Data$Position  <- Feature.Data$Point.Data$Position + Common.SeqName.Accumulate.Before.Map[Feature.Data$Point.Data$SeqName]
+          }else{
+            stop("'Point.Data'必须存在[SeqName(序列名)、Position(所在序列的位点)、Feature.Value(特征信号值)]三项信息, 可选信息[Feature.Type(特征信号所属类别)] ...")
+          }
         }
         if(! is.null(Feature.Data$Segment.Data)){
           Feature.Data$Segment.Data <- as.data.frame(Feature.Data$Segment.Data)
-          if(is.null(Feature.Data$Segment.Size)){ Feature.Data$Segment.Size = 1 }
-          if(is.null(Feature.Data$Segment.Alpha)){ Feature.Data$Segment.Alpha = 0.66 }
-          if(is.null(Feature.Data$Segment.LineType)){ Feature.Data$Segment.LineType = "solid" }
-          if(is.null(Feature.Data$Segment.Colour)){ Feature.Data$Segment.Colour = ifelse(is.null(Feature.Data$Point.Data), "DarkSlateGray", "OrangeRed") }
-          Feature.Data$Segment.Data$Position.End  <- Feature.Data$Segment.Data$Position.End + Common.SeqName.Accumulate.Before.Map[Feature.Data$Segment.Data$SeqName]
-          Feature.Data$Segment.Data$Position.Start  <- Feature.Data$Segment.Data$Position.Start + Common.SeqName.Accumulate.Before.Map[Feature.Data$Segment.Data$SeqName]
+          if(all(c("SeqName", "Position.Start", "Position.End", "Feature.Value") %in% colnames(Feature.Data$Segment.Data))){
+            if(is.null(Feature.Data$Segment.Size)){ Feature.Data$Segment.Size = 1 }
+            if(is.null(Feature.Data$Segment.Alpha)){ Feature.Data$Segment.Alpha = 0.66 }
+            if(is.null(Feature.Data$Segment.LineType)){ Feature.Data$Segment.LineType = "solid" }
+            if(is.null(Feature.Data$Segment.Colour)){ Feature.Data$Segment.Colour = ifelse(is.null(Feature.Data$Point.Data), "DarkSlateGray", "OrangeRed") }
+            Feature.Data$Segment.Data$Position.End  <- Feature.Data$Segment.Data$Position.End + Common.SeqName.Accumulate.Before.Map[Feature.Data$Segment.Data$SeqName]
+            Feature.Data$Segment.Data$Position.Start  <- Feature.Data$Segment.Data$Position.Start + Common.SeqName.Accumulate.Before.Map[Feature.Data$Segment.Data$SeqName]
+          }else{
+            stop("'Segment.Data'必须存在[SeqName(序列名), Position.Start(所在序列的起始位点), Position.End(所在序列的结束位点), Feature.Value(特征信号值)]四项信息, 可选信息[Feature.Type(特征信号所属类别)] ...")
+          }
         }
         return(Feature.Data)
       }
