@@ -10,8 +10,8 @@
 ##' @param Common.Vcf character 常见的多态SNP的VCF文件(一个很好的来源是dbSNP的common_all.vcf.gz, 建议提前进行与bam文件进行一致的coordinate排序处理)
 ##' @param Output.Prefix character 结果文件(csv格式)前缀[可携带路径]; 默认为当前工作目录下的"Facets.SNP-Pileup"
 ##' @param Sort.Operation character 设置对Tumor.Bam、Normal.Bam、Common.Vcf进行排序操作的方式, 可选("Auto", "Sort", "None"); 默认"Auto"即交由程序自行判断并排序
-##' @param Show.Progress logical 设置是否显示SNP Pileup的进度条(需要先统计SNP数量，增加程序的运行时间); 默认为FALSE
 ##' @param Compress.Output logical 设置是否对对结果文件进行压缩(csv.gz格式); 默认TRUE
+##' @param Show.Progress logical 设置是否显示SNP Pileup的进度条(需要先统计SNP数量，增加程序的运行时间); 默认为FALSE
 ##' @param Skip.Anomalous logical 设置是否跳过异常的异常读取对; 默认TRUE
 ##' @param Check.Overlaps logical 设置是否启用读取对重叠检测; 默认TRUE
 ##' @param Max.Depth numeric 设置最大深度, 即每个位置允许的最大read数; 默认0
@@ -19,9 +19,12 @@
 ##' @param Min.Map.Quality numeric 设置比对质量的最小阈值(针对MAPQ信息); 默认0
 ##' @param Min.Base.Quality numeric 设置序列质量的最小阈值(针对QUAL信息); 默认0
 ##' @param Min.Read.Counts numeric[] 设置输出位点在正常样本和肿瘤样本中最小read数; 默认c(0, 0)
+##' @param System.Pileup.Alias character SNP Pileup软件在系统中的可执行命令名, 默认为"snp-pileup"
+##' @param System.Samtools.Alias character Samtools软件在系统中的可执行命令名, 默认为"samtools"
+##' @param System.Bedtools.Alias character System.Bedtools.Alias软件在系统中的可执行命令名, 默认为"bedtools"
 Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf, 
                               Output.Prefix = NULL, Sort.Operation  = c("Auto", "Sort", "None"), 
-                              Show.Progress = FALSE, Compress.Output = TRUE, Skip.Anomalous = TRUE, Check.Overlaps = TRUE, 
+                              Compress.Output = TRUE, Show.Progress = FALSE, Skip.Anomalous = TRUE, Check.Overlaps = TRUE, 
                               Max.Depth = 4000, Pseudo.Snps = 0, Min.Map.Quality = 0, Min.Base.Quality = 0, Min.Read.Counts = c(0, 0), 
                               System.Pileup.Alias = "snp-pileup", System.Samtools.Alias = "samtools", System.Bedtools.Alias = "bedtools"){
   
@@ -41,19 +44,11 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
         Normal.Bam <- normalizePath(Normal.Bam, winslash = "/", mustWork = TRUE)
         Common.Vcf <- normalizePath(Common.Vcf, winslash = "/", mustWork = TRUE)
       }else{
-        stop("'Tumor.Bam'、'Normal.Bam'、'Common.Vcf'应为单一的文件路径 ...")
+        stop("'Tumor.Bam'、'Normal.Bam'、'Common.Vcf'应为单一且存在的文件路径 ...")
       }
       
       # 初始化SNP Pileup指令
       SNP.Pileup.Command <- sprintf("echo \"=>=>=>正在进行SNP Pileup ...\"\n\"%s\"", System.Pileup.Alias)
-      
-      # 配置Show.Progress[--progress / -p]
-      Show.Progress <- as.logical(Show.Progress)
-      if(length(Show.Progress) == 1){
-        if(Show.Progress){ SNP.Pileup.Command <- sprintf("%s --progress", SNP.Pileup.Command) } 
-      }else{
-        stop("'Show.Progress'应为单一的logical值 ...")
-      }
       
       # 配置Compress.Output[--gzip / -g]
       Compress.Output <- as.logical(Compress.Output)
@@ -61,6 +56,14 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
         if(Compress.Output){ SNP.Pileup.Command <- sprintf("%s --gzip", SNP.Pileup.Command) } 
       }else{
         stop("'Compress.Output'应为单一的logical值 ...")
+      }
+      
+      # 配置Show.Progress[--progress / -p]
+      Show.Progress <- as.logical(Show.Progress)
+      if(length(Show.Progress) == 1){
+        if(Show.Progress){ SNP.Pileup.Command <- sprintf("%s --progress", SNP.Pileup.Command) } 
+      }else{
+        stop("'Show.Progress'应为单一的logical值 ...")
       }
       
       # 配置Skip.Anomalous[--count-orphans / -A]
@@ -114,7 +117,7 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
       # 配置Min.Read.Counts[--min-read-counts / -r]
       Min.Read.Counts <- as.numeric(Min.Read.Counts)
       if(length(Min.Read.Counts) == 2 && all(Min.Read.Counts >= 0) && all(Min.Read.Counts %% 1 == 0)){
-        SNP.Pileup.Command <- sprintf("%s --min-read-counts %s,%s", SNP.Pileup.Command, Min.Read.Counts[1], Min.Read.Counts[2])
+        SNP.Pileup.Command <- sprintf("%s --min-read-counts %s", SNP.Pileup.Command, paste0(Min.Read.Counts, collapse = ","))
       }else{
         stop("'Min.Read.Counts'应为大于等于0的包含两个元素的整型numeric向量 ...")
       }
@@ -133,7 +136,7 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
       
       # 对bam文件与vcf文件进行排序处理
       Sort.Operation <- match.arg(Sort.Operation)
-      if(Sort.Operation == "None"){
+      if(Sort.Operation == "None"){# 不进行任何排序操作
         Tumor.Sorted.Bam <- Tumor.Bam; Normal.Sorted.Bam <- Normal.Bam; Common.Sorted.Vcf <- Common.Vcf
       }else{
         System.Samtools.Alias <- as.character(System.Samtools.Alias)
@@ -152,18 +155,18 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
                   Bam.SeqName.Order <- gsub(pattern = "^chr", "", union(Tumor.Bam.SeqName.Order, Normal.Bam.SeqName.Order))
                 }
                 switch(Sort.Operation, 
-                       Auto = {
+                       Auto = {# 自动判断并进行排序操作
                          if(system(sprintf("\"%s\" view -H \"%s\" | grep ^@HD.*SO:coordinate.*$", System.Samtools.Alias, Tumor.Bam), ignore.stdout = TRUE) == 0){
                            Tumor.Sorted.Bam <- Tumor.Bam
                          }else{
                            Tumor.Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Tumor.Bam), basename(Tumor.Bam))
-                           File.Order.Command <- sprintf("echo \"=>=>=>正在对'%s'进行排序操作 ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", Tumor.Bam, System.Samtools.Alias, Tumor.Sorted.Bam, Tumor.Bam)
+                           File.Order.Command <- sprintf("echo \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", Tumor.Bam, Tumor.Sorted.Bam, System.Samtools.Alias, Tumor.Sorted.Bam, Tumor.Bam)
                          }
                          if(system(sprintf("\"%s\" view -H \"%s\" | grep ^@HD.*SO:coordinate.*$", System.Samtools.Alias, Normal.Bam), ignore.stdout = TRUE) == 0){
                            Normal.Sorted.Bam <- Normal.Bam
                          }else{
                            Normal.Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Normal.Bam), basename(Normal.Bam))
-                           File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", ifelse(exists("File.Order.Command"), File.Order.Command, ""), Normal.Bam, System.Samtools.Alias, Normal.Sorted.Bam, Normal.Bam)
+                           File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", ifelse(exists("File.Order.Command"), File.Order.Command, ""), Normal.Bam, Normal.Sorted.Bam, System.Samtools.Alias, Normal.Sorted.Bam, Normal.Bam)
                          }
                          if(all(intersect(Bam.SeqName.Order, Common.Vcf.SeqName.Order) == intersect(Common.Vcf.SeqName.Order, Bam.SeqName.Order))){
                            Common.Sorted.Vcf <- Common.Vcf
@@ -173,21 +176,21 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
                            write(Ref.Order, file = Ref.Order.File, sep = "\n")
                            on.exit({unlink(Ref.Order.File, force = TRUE)}, add = TRUE)
                            Common.Sorted.Vcf <- sprintf("%s/(Sorted.Ref.Bam)%s", dirname(Common.Vcf), basename(Common.Vcf))
-                           File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ...\"\n\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"\n", ifelse(exists("File.Order.Command"), File.Order.Command, ""), Common.Vcf, System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Common.Sorted.Vcf)
+                           File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"\n", ifelse(exists("File.Order.Command"), File.Order.Command, ""), Common.Vcf, Common.Sorted.Vcf, System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Common.Sorted.Vcf)
                          }
                        }, 
-                       Sort = {
+                       Sort = {# 直接进行排序操作
                          message(sprintf("将对'%s'、'%s'、'%s'进行排序操作 ...", Tumor.Bam, Normal.Bam, Common.Vcf))
                          Tumor.Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Tumor.Bam), basename(Tumor.Bam))
-                         File.Order.Command <- sprintf("echo \"=>=>=>正在对'%s'进行排序操作 ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", Tumor.Bam, System.Samtools.Alias, Tumor.Sorted.Bam, Tumor.Bam)
+                         File.Order.Command <- sprintf("echo \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", Tumor.Bam, Tumor.Sorted.Bam, System.Samtools.Alias, Tumor.Sorted.Bam, Tumor.Bam)
                          Normal.Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Normal.Bam), basename(Normal.Bam))
-                         File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", File.Order.Command, Normal.Bam, System.Samtools.Alias, Normal.Sorted.Bam, Normal.Bam)
+                         File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", File.Order.Command, Normal.Bam, Normal.Sorted.Bam, System.Samtools.Alias, Normal.Sorted.Bam, Normal.Bam)
                          Ref.Order <- c(Bam.SeqName.Order, setdiff(Common.Vcf.SeqName.Order, Bam.SeqName.Order))
                          Ref.Order.File <- sprintf("%s/Ref.Order.txt", getwd())
                          write(Ref.Order, file = Ref.Order.File, sep = "\n")
                          on.exit({unlink(Ref.Order.File, force = TRUE)}, add = TRUE)
                          Common.Sorted.Vcf <- sprintf("%s/(Sorted.Ref.Bam)%s", dirname(Common.Vcf), basename(Common.Vcf))
-                         File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ...\"\n\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"\n", File.Order.Command, Common.Vcf, System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Common.Sorted.Vcf)
+                         File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"\n", File.Order.Command, Common.Vcf, Common.Sorted.Vcf, System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Common.Sorted.Vcf)
                        })
               }else{
                 stop(sprintf("'%s'与'%s'的共有的参考基因组比对信息(@SQ)不一致 ...", Tumor.Bam, Normal.Bam))
@@ -261,7 +264,7 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
 ##' @param Max.Depth numeric 设置最大深度, 数据预处理时总read计数大于该值的记录将被去除; 默认1000
 ##' @param SNP.Het.VAF numeric 设置SNP位点被判定为杂合位点的阈值, 正常样本VAF介于(SNP.Het.VAF, 1 - SNP.Het.VAF)之间的SNP被判定为杂合; 若Tumor.Normal.Matched为FALSE, 该值应小于等于0.1, 此时肿瘤样本VAF介于(SNP.Het.VAF, 1 - SNP.Het.VAF)之间且总read数大于等于50的SNP被判定为杂合; 默认0.25
 ##' @param Bin.Size numeric 设置窗口大小, 每个窗口将随机选择一个SNP位点(优先选择杂合位点)进行后续分析(基因组中的SNP不是均匀分布的, 使用所有位点将导致数据中的序列相关); 默认250
-##' @param Segmentation.Critical.Value numeric[] 设置片段分割过程中断点识别的T2临界值以及后期用于断点筛选的T2临界值; 默认c(25, 150)
+##' @param Segmentation.Critical.Value numeric[] 设置片段分割过程中断点识别的T2临界值以及后期用于断点筛选的T2临界值, 该值越小识别和筛选的断点数目越多, 即片段更多; 默认c(25, 150)
 ##' @param Segment.Min.Het numeric 设置分析次拷贝数时基因组片段至少应该具有的杂合性SNP位点的数量(当一个片段的杂合性SNP少于Segment.Min.Het时，可能无法有效地估计次要拷贝数，因此将返回NA); 默认15
 ##' @param EM.Max.Iter numeric 设置期望最大化算法最大的迭代次数; 默认10
 ##' @param EM.Con.Thresh numeric 设置在EM.Max.Iter内达到终止条件的收敛阈值; 默认0.001
@@ -370,7 +373,7 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
     }
     
     ############
-    ## 3.结果封装
+    ## 4.结果封装
     ############
     return(list(
       Purity = EM.Fit[["purity"]],
@@ -380,6 +383,6 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
     ))
     
   }else{
-    stop("'SNP.Pileup.Input'应为单一的character值 ...")
+    stop("'SNP.Pileup.Input'应为单一且存在的文件路径 ...")
   }
 }
