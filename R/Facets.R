@@ -255,7 +255,7 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
 ##' @param LogOR.Powerful logical 设置LogOR是否应在分段和聚类的过程中占据更多权重(增加检测杂合性SNP少的区域的等位基因失衡的能力); 默认TRUE
 ##' @param Show.Plot logica 设置是否绘制基因组图示(包括LogR、LogOR、CNV); 默认TRUE
 ##' @param Genome.Assemblies character 设置基因组版本号, 可选c("hg18", "hg19", "hg38", "mm9", "mm10", "udef")
-##' @param Udef.GC.List list 设置基因组GC含量列表(当且仅当Genome.Assemblies为"udef"时生效), 其名称与它来自的序列(染色体)相对应, 数字向量给出了不长为100bp窗口大小为1000bp的GC含量
+##' @param Udef.GC.List list 设置基因组GC含量列表(当且仅当Genome.Assemblies为"udef"时生效), 其名称与它来自的序列(染色体)相对应, 数字向量给出了步长为100bp窗口大小为1000bp的GC含量
 ##' @param Err.Thresh numeric 设置SNP位点发生错误替代的read计数阈值, SNP Pileup结果中超过该值的记录将被去除; 默认Inf
 ##' @param Del.Thresh numeric 设置SNP位点发生缺失的read计数阈值, SNP Pileup结果中超过该值的记录将被去除; 默认Inf
 ##' @param Min.Depth numeric 设置最小深度, 数据预处理时总read计数小于该值的记录将被去除; 默认35
