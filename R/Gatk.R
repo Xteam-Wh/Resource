@@ -38,7 +38,7 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
       if(length(Gatk.Local.Jar) == 1 && file.exists(Gatk.Local.Jar)){
         Gatk.GetSampleName.Command <- sprintf("%s -jar \"%s\" GetSampleName", Gatk.GetSampleName.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Gatk.Local.Jar'应为单一的文件路径 ...")
+        stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
       }
       
       # 配置AM.Input[--input / -I]
@@ -46,7 +46,7 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
       if(length(AM.Input) == 1){
         Gatk.GetSampleName.Command <- sprintf("%s --input \"%s\"", Gatk.GetSampleName.Command, normalizePath(AM.Input, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'AM.Input'应为单一的文件路径 ...")
+        stop("'AM.Input'应为单一且存在的文件路径 ...")
       }
       
       # 配置临时输出文件[--output / -O]
@@ -140,7 +140,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
       if(length(Gatk.Local.Jar) == 1 && file.exists(Gatk.Local.Jar)){
         Gatk.Mutect2.Command <- sprintf("%s -jar \"%s\" Mutect2", Gatk.Mutect2.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Gatk.Local.Jar'应为单一的文件路径 ...")
+        stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
       }
       
       # 配置Genome.Refence[--reference / -R]
@@ -148,7 +148,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
       if(length(Genome.Refence) == 1){
         Gatk.Mutect2.Command <- sprintf("%s --reference \"%s\"", Gatk.Mutect2.Command, normalizePath(Genome.Refence, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Genome.Refence'应为单一的文件路径 ...")
+        stop("'Genome.Refence'应为单一且存在的文件路径 ...")
       }
       
       # 配置AM.Input[--input / -I]
@@ -156,7 +156,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
       if(length(AM.Input) > 0){
         Gatk.Mutect2.Command <- sprintf("%s %s", Gatk.Mutect2.Command, paste0(sprintf("--input \"%s\"", normalizePath(AM.Input, winslash = "/", mustWork = TRUE)), collapse = " "))
       }else{
-        stop("'AM.Input'应为至少包含一个元素的文件集合 ...")
+        stop("'AM.Input'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
       
       # 配置Normal.Samples[--normal-sample / -normal]
@@ -171,7 +171,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
         if(length(Normal.Panel) == 1){
           Gatk.Mutect2.Command <- sprintf("%s --panel-of-normals \"%s\"", Gatk.Mutect2.Command, normalizePath(Normal.Panel, winslash = "/", mustWork = TRUE))
         }else{
-          stop("'Normal.Panel'应为Null或单一的文件路径 ...")
+          stop("'Normal.Panel'应为Null或单一且存在的文件路径 ...")
         }
       }
       
@@ -181,7 +181,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
         if(length(Germline.Resource) == 1){
           Gatk.Mutect2.Command <- sprintf("%s --germline-resource \"%s\"", Gatk.Mutect2.Command, normalizePath(Germline.Resource, winslash = "/", mustWork = TRUE))
         }else{
-          stop("'Germline.Resource'应为Null或单一的文件路径 ...")
+          stop("'Germline.Resource'应为Null或单一且存在的文件路径 ...")
         }
       }
       
@@ -314,7 +314,7 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
       if(length(Gatk.Local.Jar) == 1){
         Gatk.LearnReadOrientationModel.Command <- sprintf("%s -jar \"%s\" LearnReadOrientationModel", Gatk.LearnReadOrientationModel.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Gatk.Local.Jar'应为单一的文件路径 ...")
+        stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
       }
       
       # 配置F1R2.Counts.Input[--input / -I]
@@ -322,7 +322,7 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
       if(length(F1R2.Counts.Input) > 0){
         Gatk.LearnReadOrientationModel.Command <- sprintf("%s %s", Gatk.LearnReadOrientationModel.Command, paste0(sprintf("--input \"%s\"", normalizePath(F1R2.Counts.Input, winslash = "/", mustWork = TRUE)), collapse = " "))
       }else{
-        stop("'F1R2.Counts.Input'应为至少包含一个元素的文件集合 ...")
+        stop("'F1R2.Counts.Input'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
       
       # 配置Other.Options.Settings[其他参数]
@@ -426,7 +426,7 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
       if(length(Gatk.Local.Jar) == 1 && file.exists(Gatk.Local.Jar)){
         Gatk.GetPileupSummaries.Command <- sprintf("%s -jar \"%s\" GetPileupSummaries", Gatk.GetPileupSummaries.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Gatk.Local.Jar'应为单一的文件路径 ...")
+        stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
       }
       
       # 配置AM.Input[--input / -I]
@@ -434,7 +434,7 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
       if(length(AM.Input) > 0){
         Gatk.GetPileupSummaries.Command <- sprintf("%s %s", Gatk.GetPileupSummaries.Command, paste0(sprintf("--input \"%s\"", normalizePath(AM.Input, winslash = "/", mustWork = TRUE)), collapse = " "))
       }else{
-        stop("'AM.Input'应为至少包含一个元素的文件集合 ...")
+        stop("'AM.Input'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
       
       # 配置Germline.Variant.Sites.File[--variant / -V][--intervals / -L]
@@ -442,7 +442,7 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
       if(length(Germline.Variant.Sites) == 1){
         Gatk.GetPileupSummaries.Command <- sprintf("%s --variant \"%s\" --intervals \"%s\" ", Gatk.GetPileupSummaries.Command, normalizePath(Germline.Variant.Sites, winslash = "/", mustWork = TRUE), normalizePath(Germline.Variant.Sites, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Germline.Variant.Sites.File'应为单一的文件路径 ...")
+        stop("'Germline.Variant.Sites.File'应为单一且存在的文件路径 ...")
       }
       
       # 配置Other.Options.Settings[其他参数]
@@ -547,7 +547,7 @@ Gatk.CalculateContamination <- function(Gatk.Local.Jar,
       if(length(Gatk.Local.Jar) == 1 && file.exists(Gatk.Local.Jar)){
         Gatk.CalculateContamination.Command <- sprintf("%s -jar \"%s\" CalculateContamination", Gatk.CalculateContamination.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Gatk.Local.Jar'应为单一的文件路径 ...")
+        stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
       }
       
       # 配置Tumor.Pileup.Input[--input / -I]
@@ -555,16 +555,16 @@ Gatk.CalculateContamination <- function(Gatk.Local.Jar,
       if(length(Tumor.Pileup.Input) == 1){
         Gatk.CalculateContamination.Command <- sprintf("%s --input %s", Gatk.CalculateContamination.Command, normalizePath(Tumor.Pileup.Input, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Tumor.Pileup.Input'应为单一的文件路径 ...")
+        stop("'Tumor.Pileup.Input'应为单一且存在的文件路径 ...")
       }
       
       # 配置Normal.Pileup.Input[--matched-normal / -matched]
       Normal.Pileup.Input <- as.character(Normal.Pileup.Input)
       if(length(Normal.Pileup.Input) > 0){
-        if(length(Tumor.Pileup.Input) == 1){
+        if(length(Normal.Pileup.Input) == 1){
           Gatk.CalculateContamination.Command <- sprintf("%s --matched-normal %s", Gatk.CalculateContamination.Command, normalizePath(Normal.Pileup.Input, winslash = "/", mustWork = TRUE))
         }else{
-          stop("'Tumor.Pileup.Input'应为NULL或单一的文件路径 ...")
+          stop("'Tumor.Pileup.Input'应为NULL或单一且存在的文件路径 ...")
         }
       }
       
@@ -689,7 +689,7 @@ Gatk.FilterMutectCalls <- function(Gatk.Local.Jar,
       if(length(Gatk.Local.Jar) == 1 && file.exists(Gatk.Local.Jar)){
         Gatk.FilterMutectCalls.Command <- sprintf("%s -jar \"%s\" FilterMutectCalls", Gatk.FilterMutectCalls.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Gatk.Local.Jar'应为单一的文件路径 ...")
+        stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
       }
       
       # 配置Genome.Refence[--reference / -R]
@@ -697,7 +697,7 @@ Gatk.FilterMutectCalls <- function(Gatk.Local.Jar,
       if(length(Genome.Refence) == 1){
         Gatk.FilterMutectCalls.Command <- sprintf("%s --reference \"%s\"", Gatk.FilterMutectCalls.Command, normalizePath(Genome.Refence, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Genome.Refence'应为单一的文件路径 ...")
+        stop("'Genome.Refence'应为单一且存在的文件路径 ...")
       }
       
       # 配置Mutect2.Calling.Result[--variant / -V]
@@ -705,7 +705,7 @@ Gatk.FilterMutectCalls <- function(Gatk.Local.Jar,
       if(length(Mutect2.Calling.Result) == 1){
         Gatk.FilterMutectCalls.Command <- sprintf("%s --variant %s", Gatk.FilterMutectCalls.Command, normalizePath(Mutect2.Calling.Result, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Mutect2.Calling.Result'应为单一的文件路径 ...")
+        stop("'Mutect2.Calling.Result'应为单一且存在的文件路径 ...")
       }
       
       # 配置Orientation.Models[--orientation-bias-artifact-priors / -ob-priors]

@@ -27,7 +27,7 @@ PennCNV.MakePFB <- function(PennCNV.Input,
       }else if(length(PennCNV.Dir) == 1){
         PennCNV.Dir <- normalizePath(PennCNV.Dir, winslash = "/", mustWork = TRUE)
       }else{
-        stop("'PennCNV.Dir'应为单一的目录路径 ...")
+        stop("'PennCNV.Dir'应为单一且存在的目录路径 ...")
       }
       PennCNV.Command <- sprintf("\"%s\" \"%s/compile_pfb.pl\"", System.Perl.Alias, PennCNV.Dir)
       
@@ -38,7 +38,7 @@ PennCNV.MakePFB <- function(PennCNV.Input,
         write(normalizePath(PennCNV.Input, winslash = "/", mustWork = TRUE), file = Input.List.File, sep = "\n")
         PennCNV.Command <- sprintf("%s --listfile \"%s\"", PennCNV.Command, normalizePath(Input.List.File, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'PennCNV.Input'应为至少包含一个元素的文件集合 ...")
+        stop("'PennCNV.Input'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
       
       # 配置Position.File[--snpposfile]
@@ -47,7 +47,7 @@ PennCNV.MakePFB <- function(PennCNV.Input,
         if(length(Position.File) == 1){
           PennCNV.Command <- sprintf("%s --snpposfile \"%s\"", PennCNV.Command, normalizePath(Position.File, winslash = "/", mustWork = TRUE))
         }else{
-          stop("'Position.File'应为NULL或单一的文件路径 ...")
+          stop("'Position.File'应为NULL或单一且存在的文件路径 ...")
         }
       }
       
@@ -59,7 +59,7 @@ PennCNV.MakePFB <- function(PennCNV.Input,
         Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
         dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
-        stop("'Output.Prefix'应为Null或单一的文件路径 ...")
+        stop("'Output.Prefix'应为Null或单一且存在的文件路径 ...")
       }
       PennCNV.Output <- sprintf("%s.pfb", Output.Prefix)
       file.create(PennCNV.Output, showWarnings = FALSE)
@@ -144,7 +144,7 @@ PennCNV.Calling <- function(PennCNV.Input,
       }else if(length(PennCNV.Dir) == 1){
         PennCNV.Dir <- normalizePath(PennCNV.Dir, winslash = "/", mustWork = TRUE)
       }else{
-        stop("'PennCNV.Dir'应为单一的目录路径 ...")
+        stop("'PennCNV.Dir'应为单一且存在的目录路径 ...")
       }
       PennCNV.Command <- sprintf("\"%s\" \"%s/detect_cnv.pl\" --test", System.Perl.Alias, PennCNV.Dir)
       
@@ -156,7 +156,7 @@ PennCNV.Calling <- function(PennCNV.Input,
       if(length(HMM.File) == 1){
         PennCNV.Command <- sprintf("%s --hmmfile \"%s\"", PennCNV.Command, normalizePath(HMM.File, winslash = "/", mustWork = TRUE)) 
       }else{
-        stop("'HMM.File'应为单一的文件路径 ...")
+        stop("'HMM.File'应为单一且存在的文件路径 ...")
       }
       
       # 配置PFB.File[--pfbfile]
@@ -164,7 +164,7 @@ PennCNV.Calling <- function(PennCNV.Input,
       if(length(PFB.File) == 1){
         PennCNV.Command <- sprintf("%s --pfbfile \"%s\"", PennCNV.Command, normalizePath(PFB.File, winslash = "/", mustWork = TRUE)) 
       }else{
-        stop("'PFB.File'应为单一的文件路径 ...")
+        stop("'PFB.File'应为单一且存在的文件路径 ...")
       }
       
       # 配置GC.Model.File[--gcmodelfile]
@@ -173,7 +173,7 @@ PennCNV.Calling <- function(PennCNV.Input,
         if(length(GC.Model.File) == 1){
           PennCNV.Command <- sprintf("%s --gcmodelfile \"%s\"", PennCNV.Command, normalizePath(GC.Model.File, winslash = "/", mustWork = TRUE)) 
         }else{
-          stop("'GC.Model.File'应为NULL或单一的文件路径 ...")
+          stop("'GC.Model.File'应为NULL或单一且存在的文件路径 ...")
         }
       }
       
@@ -184,7 +184,7 @@ PennCNV.Calling <- function(PennCNV.Input,
         write(normalizePath(PennCNV.Input, winslash = "/", mustWork = TRUE), file = Input.List.File, sep = "\n")
         PennCNV.Command <- sprintf("%s --listfile \"%s\"", PennCNV.Command, normalizePath(Input.List.File, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'PennCNV.Input'应为至少包含一个元素的文件集合 ...")
+        stop("'PennCNV.Input'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
       
       # 配置Sample.Sex[--sexfile]
@@ -251,7 +251,7 @@ PennCNV.Calling <- function(PennCNV.Input,
         Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
         dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
-        stop("'Output.Prefix'应为Null或单一的文件路径 ...")
+        stop("'Output.Prefix'应为Null或单一且存在的文件路径 ...")
       }
       PennCNV.Output <- sprintf("%s.txt", Output.Prefix)
       file.create(PennCNV.Output, showWarnings = FALSE)

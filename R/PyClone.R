@@ -51,7 +51,7 @@ PyClone.Run <- function(PyClone.Input,
       if(length(PyClone.Input) > 0){
         PyClone.Command <- sprintf("%s --in_files %s", PyClone.Command, paste0(sprintf("\"%s\"", normalizePath(PyClone.Input, winslash = "/", mustWork = TRUE)), collapse = " "))
       }else{
-        stop("'PyClone.Input'应为至少包含一个元素的tsv格式文件集合 ...")
+        stop("'PyClone.Input'应为至少包含一个元素的tsv格式文件集合, 且各文件应已经存在 ...")
       }
       
       
@@ -146,7 +146,7 @@ PyClone.Run <- function(PyClone.Input,
         if(length(Config.Extras.File) == 1){
           PyClone.Command <- sprintf("%s --config_extras_file %s", PyClone.Command, normalizePath(Config.Extras.File, winslash = "/", mustWork = TRUE))
         }else{
-          stop("'Config.Extras.File'应为NULL或单一'的yaml'格式的文件路径 ...")
+          stop("'Config.Extras.File'应为NULL或单一且存在的文件路径 ...")
         }
       }
       

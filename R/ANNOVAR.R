@@ -29,7 +29,7 @@ Annovar.Download <- function(Database,
         if(length(Annovar.Dir) == 1){
           Annovar.Dir <- normalizePath(Annovar.Dir, winslash = "/", mustWork = TRUE)
         }else{
-          stop("'Annovar.Dir'应为NULL或单一的目录路径 ...")
+          stop("'Annovar.Dir'应为NULL或单一且存在的目录路径 ...")
         }
       }
       Annovar.Command <- sprintf("\"%s\" \"%s/annotate_variation.pl\"", System.Perl.Alias, Annovar.Dir)
@@ -50,7 +50,7 @@ Annovar.Download <- function(Database,
         if(length(Database.Dir) == 1){
           Database.Dir <- sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = Database.Dir)
         }else{
-          stop("'Database.Dir'应为NULL或单一的目录路径 ...")
+          stop("'Database.Dir'应为NULL或单一且存在的目录路径 ...")
         }
       }
       dir.create(Database.Dir, recursive = TRUE, showWarnings = FALSE)
@@ -140,7 +140,7 @@ Annovar.Run <- function(Annovar.Input, Database,
       }else if(length(Annovar.Dir) == 1){
         Annovar.Dir <- normalizePath(Annovar.Dir, winslash = "/", mustWork = TRUE)
       }else{
-        stop("'Annovar.Dir'应为NULL或单一的目录路径 ...")
+        stop("'Annovar.Dir'应为NULL或NULL或单一且存在的目录路径 ...")
       }
       Annovar.Command <- sprintf("\"%s\" \"%s/table_annovar.pl\"", System.Perl.Alias, Annovar.Dir)
       
@@ -149,7 +149,7 @@ Annovar.Run <- function(Annovar.Input, Database,
       if(length(Annovar.Input) == 1){
         Annovar.Command <- sprintf("%s \"%s\"", Annovar.Command, normalizePath(Annovar.Input, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Annovar.Input'应为单一的文件路径 ...")
+        stop("'Annovar.Input'应为单一且存在的文件路径 ...")
       }
       
       # 配置Database.Dir[<database-location>]
@@ -159,7 +159,7 @@ Annovar.Run <- function(Annovar.Input, Database,
       }else if(length(Database.Dir) == 1){
         Annovar.Command <- sprintf("%s \"%s\"", Annovar.Command, normalizePath(Database.Dir, winslash = "/", mustWork = TRUE))
       }else{
-        stop("'Database.Dir'应为单一的目录路径 ...")
+        stop("'Database.Dir'应为NULL或单一且存在的目录路径 ...")
       }
       
       # 配置Database.Buildver[--buildver]
