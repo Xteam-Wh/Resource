@@ -37,9 +37,7 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
       Tumor.Bam <- as.character(Tumor.Bam)
       Normal.Bam <- as.character(Normal.Bam)
       Common.Vcf <- as.character(Common.Vcf)
-      if((length(Tumor.Bam) == 1 && file.exists(Tumor.Bam)) && 
-         (length(Normal.Bam) == 1 && file.exists(Normal.Bam)) && 
-         (length(Common.Vcf) == 1 && file.exists(Common.Vcf))){
+      if(length(Tumor.Bam) == 1  && length(Normal.Bam) == 1 && length(Common.Vcf) == 1){
         Tumor.Bam <- normalizePath(Tumor.Bam, winslash = "/", mustWork = TRUE)
         Normal.Bam <- normalizePath(Normal.Bam, winslash = "/", mustWork = TRUE)
         Common.Vcf <- normalizePath(Common.Vcf, winslash = "/", mustWork = TRUE)
