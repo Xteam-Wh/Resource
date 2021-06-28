@@ -350,17 +350,17 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
     ############
     ## 2.数据预处理以及拷贝数的估计
     ############
-    # 读取snp-pileup生成SNP位点read计数矩阵, 统计SNP位点在正常样本与肿瘤样本中的总read数以及匹配到参考等位的read数
+    # 读取Snp Pileup生成的read矩阵，统计每个SNP位点在正常样本和肿瘤样本中覆盖到的总read数(参考+替换)以及比对到参考基因组的read数
     SNP.Read.Mtr <- readSnpMatrix(SNP.Pileup.Input, err.thresh = Err.Thresh, del.thresh = Del.Thresh)
     Chrom.Is.Numeric <- grepl("^\\d*$", SNP.Read.Mtr$Chromosome)
     Mtr.Chrom.Numeric <- SNP.Read.Mtr[Chrom.Is.Numeric, ]
     Mtr.Chrom.Character <- SNP.Read.Mtr[! Chrom.Is.Numeric, ]
     SNP.Read.Mtr <- rbind(Mtr.Chrom.Numeric[order(as.numeric(Mtr.Chrom.Numeric$Chromosome)), ], Mtr.Chrom.Character[order(Mtr.Chrom.Character$Chromosome), ])
-    # 数据预处理(计算LogR与LogOR值, 将SNP位点片段化) 
+    # 数据预处理(SNP位点的杂合性判断与筛选，LogR与LogOR值的计算, SNP位点片段化)
     Mtr.Processes <- preProcSample(SNP.Read.Mtr, gbuild = match.arg(Genome.Assemblies), ugcpct = as.list(Udef.GC.List), unmatched = !Tumor.Normal.Matched, ndepth = Min.Depth, ndepthmax = Max.Depth, het.thresh = SNP.Het.VAF, snp.nbhd = Bin.Size, hetscale = LogOR.Powerful, cval = Segmentation.Critical.Value[1])
-    # 对片段聚类并估计初始的等位特异拷贝数 
+    # 为EM算法估计初始的参数值(片段重选，片段聚类，估计二倍体状态LogR，估计拷贝数状态、细胞分数等参数)
     NV.Fit <- procSample(Mtr.Processes, cval = Segmentation.Critical.Value[2], min.nhet = Segment.Min.Het)
-    # 基于期望最大化算法估计等位特异拷贝数和细胞分数以及肿瘤纯度和倍性
+    # 基于期望最大化(EM)算法估计最终参数(纯度、倍性、拷贝数状态、细胞分数)
     EM.Fit <- emcncf(NV.Fit, min.nhet = Segment.Min.Het, maxiter = EM.Max.Iter, eps = EM.Con.Thresh)
     
     ############
