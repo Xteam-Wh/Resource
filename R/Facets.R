@@ -374,9 +374,9 @@ Facets.CNV.Calling <- function(SNP.Pileup.Input,
     ## 4.结果封装
     ############
     return(list(
-      Purity = EM.Fit[["purity"]],
-      Ploidy = EM.Fit[["ploidy"]],
-      Point.Data = data.frame(SeqName = NV.Fit$jointseg$chrom, Position = NV.Fit$jointseg$maploc, LogR = NV.Fit$jointseg$cnlr - EM.Fit$dipLogR, LogOR = NV.Fit$jointseg$valor),
+      Purity = EM.Fit$purity,
+      Ploidy = EM.Fit$ploidy,
+      Point.Data = data.frame(SeqName = NV.Fit$jointseg$chrom, Position = NV.Fit$jointseg$maploc, LogR = NV.Fit$jointseg$cnlr - NV.Fit$dipLogR, LogOR = NV.Fit$jointseg$valor),
       Segment.Data = data.frame(SeqName = EM.Fit$cncf$chrom,  Position.Start = EM.Fit$cncf$start, Position.End = EM.Fit$cncf$end, LogR = EM.Fit$cncf$cnlr.median - EM.Fit$dipLogR, LogOR.Square = abs(EM.Fit$cncf$mafR), CN.Total = EM.Fit$cncf$tcn.em, CN.Minor = EM.Fit$cncf$lcn.em, Cell.Fraction = EM.Fit$cncf$cf.em)
     ))
     
