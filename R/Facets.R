@@ -178,7 +178,6 @@ Facets.SNP.Pileup <- function(Tumor.Bam, Normal.Bam, Common.Vcf,
                          }
                        }, 
                        Sort = {# 直接进行排序操作
-                         message(sprintf("将对'%s'、'%s'、'%s'进行排序操作 ...", Tumor.Bam, Normal.Bam, Common.Vcf))
                          Tumor.Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Tumor.Bam), basename(Tumor.Bam))
                          File.Order.Command <- sprintf("echo \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", Tumor.Bam, Tumor.Sorted.Bam, System.Samtools.Alias, Tumor.Sorted.Bam, Tumor.Bam)
                          Normal.Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Normal.Bam), basename(Normal.Bam))

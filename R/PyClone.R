@@ -51,7 +51,7 @@ PyClone.Run <- function(PyClone.Input,
       if(length(PyClone.Input) > 0){
         PyClone.Command <- sprintf("%s --in_files %s", PyClone.Command, paste0(sprintf("\"%s\"", normalizePath(PyClone.Input, winslash = "/", mustWork = TRUE)), collapse = " "))
       }else{
-        stop("'PyClone.Input'应为至少包含一个元素的tsv格式文件集合, 且各文件应已经存在 ...")
+        stop("'PyClone.Input'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
       
       
