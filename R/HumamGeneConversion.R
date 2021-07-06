@@ -68,33 +68,16 @@ Humam.Gene.Conversion.Local <- function(Values,
 ##' @param Values.Type character 待转换的基因集合的基因类型
 ##' @param Conversion.Type character[] 期望转换的基因类型
 ##' @param Run.Model character 运行模式(自动模式或引导模式), 可选("Auto", "Lead")
-##' @param Mart.Envir character Mart对象的存在环境(全局或局部), 可选("Global", "Partial"); 若使用"Global"则仅在全局对象中创建一次Mart对象之后均在全局变量中寻找该对象并使用, 若使用"Partial"则每次调用该函数均重新创建一次Mart对象并删除全局变量之前创建的Mart对象, 
 ##' @return data.frame 对应'Values'集合以及对应各'Conversion.Type'类型的转换后的结果, 未能匹配的基因转换结果为NA
 Humam.Gene.Conversion.Internet <- function(Values, 
-                                        Values.Type, 
-                                        Conversion.Type, 
-                                        Run.Model = c("Auto", "Lead"), 
-                                        Mart.Envir = c("Global", "Partial")){
+                                           Values.Type, 
+                                           Conversion.Type, 
+                                           Run.Model = c("Auto", "Lead")){
   library(biomaRt)
   Values <- unique(as.character(Values))
   Run.Model <- match.arg(Run.Model)
-  Mart.Envir <- match.arg(Mart.Envir)
-  # 查找或创建Mart对象
-  switch(Mart.Envir,
-         Global = {
-           if(! exists(".Mart.Use", envir = .GlobalEnv)){
-             # 选择使用ENSEMBL数据库以及人类基因组数据集
-             .GlobalEnv$.Mart.Use <- useMart(biomart = "ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl")
-           }
-           Mart.Use <- .GlobalEnv$.Mart.Use
-         },
-         Partial = {
-           if(exists(".Mart.Use", envir = .GlobalEnv)){
-             remove(.Mart.Use, envir = .GlobalEnv)
-           }
-           # 选择使用ENSEMBL数据库以及人类基因组数据集
-           Mart.Use <- useMart(biomart = "ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl")
-         })
+  # 创建Mart对象(选择使用ENSEMBL数据库以及人类基因组数据集)
+  Mart.Use <- useMart(biomart = "ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl")
   Values.Allow.Type <- listFilters(Mart.Use)
   Conversion.Allow.Type <- listAttributes(Mart.Use, what = c("name", "description"))
   Values.Allow.Type <- Values.Allow.Type[Values.Allow.Type$name %in% Conversion.Allow.Type$name, ]

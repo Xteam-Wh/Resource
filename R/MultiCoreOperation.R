@@ -43,7 +43,7 @@ Parallel.Execut <- function(Data, Function, Cores.Need = 2, Cores.Type = c("Logi
         if(Sys.Type == "Windows"){
           Common.Packages <- as.character(Common.Packages)
           Common.Objects <- as.character(Common.Objects)
-          .GlobalEnv$.Common.Packages <- Common.Packages
+          assign(".Common.Packages", Common.Packages, envir = globalenv())
           on.exit(remove(.Common.Packages, envir = .GlobalEnv), add = TRUE)
           clusterExport(Cluster, varlist = c(Common.Objects, ".Common.Packages"))
           clusterEvalQ(Cluster, eval(parse(text = paste0(sprintf("library(%s)", .Common.Packages), collapse = ";"))))
