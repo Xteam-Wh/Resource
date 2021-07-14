@@ -54,39 +54,8 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
       on.exit(expr = {unlink(Sample.Temp.Output, force = TRUE)}, add = TRUE)
       Gatk.GetSampleName.Command <- sprintf("%s --output \"%s\"", Gatk.GetSampleName.Command, Sample.Temp.Output)
       
-      # 根据操作系统环境设置脚本内容
-      Gatk.GetSampleName.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Gatk.GetSampleName.Command)
-      # 根据操作系统环境设置脚本文件
-      Gatk.GetSampleName.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Gatk.GetSampleName.Command.bat", "%s/Gatk.GetSampleName.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(Gatk.GetSampleName.Command, Gatk.GetSampleName.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(Gatk.GetSampleName.Command.File)
-      
-      # 运行Gatk GetSampleName
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件Gatk.GetSampleName.Command.File
-          Gatk.GetSampleName.Command.Run <- system(sprintf("\"%s\"", Gatk.GetSampleName.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则Gatk.GetSampleName.Command.Run返回的状态信息为0
-          if(exists("Gatk.GetSampleName.Command.Run") && Gatk.GetSampleName.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nGatk.GetSampleName.Command执行成功 ..."))
-            unlink(Gatk.GetSampleName.Command.File, force = TRUE)
-            return(readLines(Sample.Temp.Output, warn = FALSE))
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nGatk.GetSampleName.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Gatk.GetSampleName.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = Gatk.GetSampleName.Command)
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))
@@ -239,38 +208,8 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
         stop("'Output.Compressed'应为单一的logical值 ...")
       }
       
-      # 根据操作系统环境设置脚本内容
-      Gatk.Mutect2.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Gatk.Mutect2.Command)
-      # 根据操作系统环境设置脚本文件
-      Gatk.Mutect2.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Gatk.Mutect2.Command.bat", "%s/Gatk.Mutect2.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(Gatk.Mutect2.Command, Gatk.Mutect2.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(Gatk.Mutect2.Command.File)
-      
-      # 运行Gatk Mutect2
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件Gatk.Mutect2.Command.File
-          Gatk.Mutect2.Command.Run <- system(sprintf("\"%s\"", Gatk.Mutect2.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则Gatk.Mutect2.Command.Run返回的状态信息为0
-          if(exists("Gatk.Mutect2.Command.Run") && Gatk.Mutect2.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nGatk.Mutect2.Command执行成功, 结果已输出至文件'%s' ...", Mutect2.Calling.Output))
-            unlink(Gatk.Mutect2.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nGatk.Mutect2.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Gatk.Mutect2.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = Gatk.Mutect2.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", Mutect2.Calling.Output))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))
@@ -350,38 +289,8 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
       Orientation.Model.Output <- normalizePath(Orientation.Model.Output, winslash = "/", mustWork = TRUE)
       Gatk.LearnReadOrientationModel.Command <- sprintf("%s --output \"%s\"", Gatk.LearnReadOrientationModel.Command, Orientation.Model.Output)
       
-      # 根据操作系统环境设置脚本内容
-      Gatk.LearnReadOrientationModel.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Gatk.LearnReadOrientationModel.Command)
-      # 根据操作系统环境设置脚本文件
-      Gatk.LearnReadOrientationModel.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Gatk.LearnReadOrientationModel.Command.bat", "%s/Gatk.LearnReadOrientationModel.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(Gatk.LearnReadOrientationModel.Command, Gatk.LearnReadOrientationModel.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(Gatk.LearnReadOrientationModel.Command.File)
-      
-      # 运行Gatk LearnReadOrientationModel
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件Gatk.LearnReadOrientationModel.Command.File
-          Gatk.LearnReadOrientationModel.Command.Run <- system(sprintf("\"%s\"", Gatk.LearnReadOrientationModel.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则Gatk.LearnReadOrientationModel.Command.Run返回的状态信息为0
-          if(exists("Gatk.LearnReadOrientationModel.Command.Run") && Gatk.LearnReadOrientationModel.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nGatk.LearnReadOrientationModel.Command执行成功, 结果已输出至文件'%s' ...", Orientation.Model.Output))
-            unlink(Gatk.LearnReadOrientationModel.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nGatk.LearnReadOrientationModel.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Gatk.LearnReadOrientationModel.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = Gatk.LearnReadOrientationModel.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", Orientation.Model.Output))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))
@@ -470,175 +379,8 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
       Pileup.Table.Output <- normalizePath(Pileup.Table.Output, winslash = "/", mustWork = TRUE)
       Gatk.GetPileupSummaries.Command <- sprintf("%s --output \"%s\"", Gatk.GetPileupSummaries.Command, Pileup.Table.Output)
       
-      # 根据操作系统环境设置脚本内容
-      Gatk.GetPileupSummaries.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Gatk.GetPileupSummaries.Command)
-      # 根据操作系统环境设置脚本文件
-      Gatk.GetPileupSummaries.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Gatk.GetPileupSummaries.Command.bat", "%s/Gatk.GetPileupSummaries.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(Gatk.GetPileupSummaries.Command, Gatk.GetPileupSummaries.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(Gatk.GetPileupSummaries.Command.File)
-      
-      # 运行Gatk GetPileupSummaries
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件Gatk.GetPileupSummaries.Command.File
-          Gatk.GetPileupSummaries.Command.Run <- system(sprintf("\"%s\"", Gatk.GetPileupSummaries.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则Gatk.GetPileupSummaries.Command.Run返回的状态信息为0
-          if(exists("Gatk.GetPileupSummaries.Command.Run") && Gatk.GetPileupSummaries.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nGatk.GetPileupSummaries.Command执行成功, 结果已输出至文件'%s' ...", Pileup.Table.Output))
-            unlink(Gatk.GetPileupSummaries.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nGatk.GetPileupSummaries.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Gatk.GetPileupSummaries.Command.File))
-          }
-        }
-      )
-      
-    }else{
-      stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))
-    }
-  }else{
-    stop("'System.Java.Alias'应为单一的character值 ...")
-  }
-}
-
-
-##' @description 通过R函数传参调用Gatk CalculateContamination评估交叉样本污染reads分数
-##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
-##' @param Tumor.Pileup.Input character 由Gatk GetPileupSummaries针对肿瘤样本统计的堆积指标文件
-##' @param Normal.Pileup.Input character 由Gatk GetPileupSummaries针对正常样本[与肿瘤样本来自同一个体]统计的堆积指标文件
-##' @param With.Segmentation.Table logical 是否输出按次等位基因分数划分的肿瘤样本区段; 默认FALSE
-##' @param Output.Prefix character 结果文件前缀[可携带路径]; 默认为当前工作目录下的"Gatk.CalculateContamination"
-##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认为"java"
-##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等
-##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用
-Gatk.CalculateContamination <- function(Gatk.Local.Jar, 
-                                        Tumor.Pileup.Input, Normal.Pileup.Input = NULL, With.Segmentation.Table = FALSE, 
-                                        Output.Prefix = NULL, System.Java.Alias = "java", Java.Options.Settings = NULL, Other.Options.Settings = NULL){
-  
-  System.Java.Alias <- as.character(System.Java.Alias)
-  if(length(System.Java.Alias) == 1){
-    # 判断System.Java.Alias在系统中是否存在
-    if(nchar(Sys.which(System.Java.Alias)) > 0){
-      
-      # 配置Java.Options.Settings[Java运行环境设置]
-      Java.Options.Settings <- as.character(Java.Options.Settings)
-      if(length(Java.Options.Settings) > 0){
-        if(length(Java.Options.Settings) == 1){
-          Gatk.CalculateContamination.Command <- sprintf("\"%s\" %s", System.Java.Alias, trimws(Java.Options.Settings))
-        }else{
-          stop("'Java.Options.Settings'应为Null或单一的character值 ...")
-        }
-      }else{
-        Gatk.CalculateContamination.Command <- sprintf("\"%s\"", System.Java.Alias)
-      }
-      
-      # 配置Gatk.Local.Jar[指定Gatk本地jar包]
-      Gatk.Local.Jar <- as.character(Gatk.Local.Jar)
-      if(length(Gatk.Local.Jar) == 1 && file.exists(Gatk.Local.Jar)){
-        Gatk.CalculateContamination.Command <- sprintf("%s -jar \"%s\" CalculateContamination", Gatk.CalculateContamination.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
-      }else{
-        stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
-      }
-      
-      # 配置Tumor.Pileup.Input[--input / -I]
-      Tumor.Pileup.Input <- as.character(Tumor.Pileup.Input)
-      if(length(Tumor.Pileup.Input) == 1){
-        Gatk.CalculateContamination.Command <- sprintf("%s --input %s", Gatk.CalculateContamination.Command, normalizePath(Tumor.Pileup.Input, winslash = "/", mustWork = TRUE))
-      }else{
-        stop("'Tumor.Pileup.Input'应为单一且存在的文件路径 ...")
-      }
-      
-      # 配置Normal.Pileup.Input[--matched-normal / -matched]
-      Normal.Pileup.Input <- as.character(Normal.Pileup.Input)
-      if(length(Normal.Pileup.Input) > 0){
-        if(length(Normal.Pileup.Input) == 1){
-          Gatk.CalculateContamination.Command <- sprintf("%s --matched-normal %s", Gatk.CalculateContamination.Command, normalizePath(Normal.Pileup.Input, winslash = "/", mustWork = TRUE))
-        }else{
-          stop("'Tumor.Pileup.Input'应为NULL或单一且存在的文件路径 ...")
-        }
-      }
-      
-      # 配置Other.Options.Settings[其他参数]
-      Other.Options.Settings <- as.character(Other.Options.Settings)
-      if(length(Other.Options.Settings) > 0){
-        if(length(Other.Options.Settings) == 1){
-          Gatk.CalculateContamination.Command <- sprintf("%s %s", Gatk.CalculateContamination.Command, trimws(Other.Options.Settings))
-        }else{
-          stop("'Other.Options.Settings'应为Null或单一的character值 ...")
-        }
-      }
-      
-      # 配置Output.Prefix
-      Output.Prefix <- as.character(Output.Prefix)
-      if(length(Output.Prefix) == 0){
-        Output.Prefix <- sprintf("%s/Gatk.CalculateContamination", getwd())
-      }else if(length(Output.Prefix) == 1){
-        Output.Prefix <- normalizePath(sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = trimws(Output.Prefix)), winslash = "/", mustWork = FALSE)
-        dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
-      }else{
-        stop("'Output.Prefix'应为Null或单一的character值 ...")
-      }
-      
-      # 配置With.Tumor.Segmentation[--tumor-segmentation / -segments]
-      With.Segmentation.Table <- as.logical(With.Segmentation.Table)
-      if(length(With.Segmentation.Table) == 1){
-        if(With.Segmentation.Table){
-          Segmentation.Table.Output <- sprintf("%s.segmentation.table", Output.Prefix)
-          file.create(Segmentation.Table.Output, showWarnings = FALSE)
-          Gatk.CalculateContamination.Command <- sprintf("%s --tumor-segmentation %s", Gatk.CalculateContamination.Command, normalizePath(Segmentation.Table.Output, winslash = "/", mustWork = TRUE))
-        }
-      }else{
-        stop("'With.Tumor.Segmentation'应为单一的logical值 ...")
-      }
-      
-      # 配置Contamination.Table.Output[--output / -O]
-      Contamination.Table.Output <- sprintf("%s.table", Output.Prefix)
-      file.create(Contamination.Table.Output, showWarnings = FALSE)
-      Contamination.Table.Output <- normalizePath(Contamination.Table.Output, winslash = "/", mustWork = TRUE)
-      Gatk.CalculateContamination.Command <- sprintf("%s --output \"%s\"", Gatk.CalculateContamination.Command, Contamination.Table.Output)
-      
-      # 根据操作系统环境设置脚本内容
-      Gatk.CalculateContamination.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Gatk.CalculateContamination.Command)
-      # 根据操作系统环境设置脚本文件
-      Gatk.CalculateContamination.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Gatk.CalculateContamination.Command.bat", "%s/Gatk.CalculateContamination.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(Gatk.CalculateContamination.Command, Gatk.CalculateContamination.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(Gatk.CalculateContamination.Command.File)
-      
-      # 运行Gatk CalculateContamination
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件Gatk.CalculateContamination.Command.File
-          Gatk.CalculateContamination.Command.Run <- system(sprintf("\"%s\"", Gatk.CalculateContamination.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则Gatk.CalculateContamination.Command.Run返回的状态信息为0
-          if(exists("Gatk.CalculateContamination.Command.Run") && Gatk.CalculateContamination.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nGatk.CalculateContamination.Command执行成功, 结果已输出至文件'%s' ...", Contamination.Table.Output))
-            unlink(Gatk.CalculateContamination.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nGatk.CalculateContamination.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Gatk.CalculateContamination.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = Gatk.GetPileupSummaries.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", Pileup.Table.Output))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))
@@ -758,38 +500,8 @@ Gatk.FilterMutectCalls <- function(Gatk.Local.Jar,
         stop("'Filter.Output.Compressed'应为单一的logical值 ...")
       }
       
-      # 根据操作系统环境设置脚本内容
-      Gatk.FilterMutectCalls.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Gatk.FilterMutectCalls.Command)
-      # 根据操作系统环境设置脚本文件
-      Gatk.FilterMutectCalls.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Gatk.FilterMutectCalls.Command.bat", "%s/Gatk.FilterMutectCalls.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(Gatk.FilterMutectCalls.Command, Gatk.FilterMutectCalls.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(Gatk.FilterMutectCalls.Command.File)
-      
-      # 运行Gatk FilterMutectCalls
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件Gatk.FilterMutectCalls.Command.File
-          Gatk.FilterMutectCalls.Command.Run <- system(sprintf("\"%s\"", Gatk.FilterMutectCalls.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则Gatk.FilterMutectCalls.Command.Run返回的状态信息为0
-          if(exists("Gatk.FilterMutectCalls.Command.Run") && Gatk.FilterMutectCalls.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nGatk.FilterMutectCalls.Command执行成功, 结果已输出至文件'%s' ...", Mutect2.Filter.Output))
-            unlink(Gatk.FilterMutectCalls.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nGatk.FilterMutectCalls.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Gatk.FilterMutectCalls.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = Gatk.FilterMutectCalls.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", Mutect2.Filter.Output))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))

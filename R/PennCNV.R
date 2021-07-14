@@ -66,38 +66,8 @@ PennCNV.MakePFB <- function(PennCNV.Input,
       PennCNV.Output <- normalizePath(PennCNV.Output, winslash = "/", mustWork = TRUE)
       PennCNV.Command <- sprintf("%s --output \"%s\"", PennCNV.Command, PennCNV.Output)
       
-      # 根据操作系统环境设置脚本内容
-      PennCNV.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  PennCNV.Command)
-      # 根据操作系统环境设置脚本文件
-      PennCNV.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/PennCNV.Command.bat", "%s/PennCNV.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(PennCNV.Command, PennCNV.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(PennCNV.Command.File)
-      
-      # 运行PennCNV
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件PennCNV.Command.File
-          PennCNV.Command.Run <- system(PennCNV.Command.File)
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则PennCNV.Command.Run返回的状态信息为0
-          if(exists("PennCNV.Command.Run") && PennCNV.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nPennCNV.Command执行成功, 结果已输出至文件'%s' ...", PennCNV.Output))
-            unlink(c(Input.List.File, PennCNV.Command.File), force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nPennCNV.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", PennCNV.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = PennCNV.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", PennCNV.Output))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Perl.Alias))
@@ -258,38 +228,8 @@ PennCNV.Calling <- function(PennCNV.Input,
       PennCNV.Output <- normalizePath(PennCNV.Output, winslash = "/", mustWork = TRUE)
       PennCNV.Command <- sprintf("%s --output \"%s\"", PennCNV.Command, PennCNV.Output)
       
-      # 根据操作系统环境设置脚本内容
-      PennCNV.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  PennCNV.Command)
-      # 根据操作系统环境设置脚本文件
-      PennCNV.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/PennCNV.Command.bat", "%s/PennCNV.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(PennCNV.Command, PennCNV.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(PennCNV.Command.File)
-      
-      # 运行PennCNV
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件PennCNV.Command.File
-          PennCNV.Command.Run <- system(PennCNV.Command.File)
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则PennCNV.Command.Run返回的状态信息为0
-          if(exists("PennCNV.Command.Run") && PennCNV.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nPennCNV.Command执行成功, 结果已输出至文件'%s' ...", PennCNV.Output))
-            unlink(na.omit(c(Input.List.File, PennCNV.Command.File, ifelse(length(Sample.Sex) > 0, Sample.Sex.File, ""))), force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nPennCNV.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", PennCNV.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = PennCNV.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", PennCNV.Output))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Perl.Alias))

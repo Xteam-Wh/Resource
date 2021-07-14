@@ -57,41 +57,8 @@ Annovar.Download <- function(Database,
       Database.Dir <- normalizePath(Database.Dir, winslash = "/", mustWork = TRUE)
       Annovar.Command <- sprintf("%s \"%s\"", Annovar.Command, Database.Dir)
       
-      # 配置Database.Buildver[--buildver]、Webfrom[--webfrom]、[--downdb]
-      Annovar.Command <- sprintf("%s --buildver \"%s\" --webfrom \"%s\" --downdb", Annovar.Command, match.arg(Database.Buildver), match.arg(Webfrom))
-      
-      # 根据操作系统环境设置脚本内容
-      Annovar.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Annovar.Command)
-      # 根据操作系统环境设置脚本文件
-      Annovar.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Annovar.Command.bat", "%s/Annovar.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(Annovar.Command, Annovar.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(Annovar.Command.File)
-      
-      # 运行Annovar
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件Annovar.Command.File
-          Annovar.Command.Run <- system(Annovar.Command.File)
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则Annovar.Command.Run返回的状态信息为0
-          if(exists("Annovar.Command.Run") && Annovar.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nAnnovar.Command执行成功, 注释数据库'%s'相关信息已下载至目录'%s' ...", Database, Database.Dir))
-            unlink(Annovar.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nAnnovar.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Annovar.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = Annovar.Command, Success.Message = sprintf("注释数据库'%s'相关信息已下载至目录'%s' ...", Database, Database.Dir))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s'", System.Perl.Alias))
@@ -201,7 +168,7 @@ Annovar.Run <- function(Annovar.Input, Database,
           stop("'Operation'中含有'gx', 应通过'Xref.File'为其设置要使用的交叉引用注释文件 ...")
         }
       }
-
+      
       # 配置Do.Polish[--polish]
       Do.Polish <- as.logical(Do.Polish)
       if(length(Do.Polish) == 1){
@@ -245,7 +212,7 @@ Annovar.Run <- function(Annovar.Input, Database,
       }else{
         stop("'ATemp.Remove'应为单一的logical值 ...")
       }
-
+      
       # 配置[--vcfinput]、Csvout[--csvout]
       Csvout <- as.logical(Csvout)
       if(length(Csvout) == 1){
@@ -282,38 +249,8 @@ Annovar.Run <- function(Annovar.Input, Database,
       }
       Annovar.Command <- sprintf("%s --outfile \"%s\"", Annovar.Command, Output.Prefix)
       
-      # 根据操作系统环境设置脚本内容
-      Annovar.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  Annovar.Command)
-      # 根据操作系统环境设置脚本文件
-      Annovar.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Annovar.Command.bat", "%s/Annovar.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(Annovar.Command, Annovar.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(Annovar.Command.File)
-      
-      # 运行Annovar
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件Annovar.Command.File
-          Annovar.Command.Run <- system(sprintf("\"%s\"", Annovar.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则Annovar.Command.Run返回的状态信息为0
-          if(exists("Annovar.Command.Run") && Annovar.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nAnnovar.Command执行成功, 结果文件已输出至'%s.Xxx' ...", Output.Prefix))
-            unlink(Annovar.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nAnnovar.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", Annovar.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = Annovar.Command, Success.Message = sprintf("结果文件已输出至'%s.Xxx' ...", Output.Prefix))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Perl.Alias))

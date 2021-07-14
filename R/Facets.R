@@ -168,9 +168,9 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
                          if(system(sprintf("\"%s\" view -H \"%s\" | grep ^@HD.*SO:coordinate.*$", System.Samtools.Alias, Bam), ignore.stdout = TRUE) == 0){
                            Sorted.Bam <- Bam
                          }else{
-                           Parent.Env <- parent.env(environment())
                            Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Bam), basename(Bam))
-                           Parent.Env$File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", ifelse(exists("File.Order.Command", envir = Parent.Env), File.Order.Command, ""), Bam, Sorted.Bam, System.Samtools.Alias, Sorted.Bam, Bam)
+                           Bam.Sort.Command <- sprintf("\"%s\" sort -o \"%s\" \"%s\"", System.Samtools.Alias, Sorted.Bam, Bam)
+                           System.Command.Run(System.Command = Bam.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", Bam, Sorted.Bam))
                          }
                          return(Sorted.Bam) 
                        })
@@ -182,14 +182,15 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
                          write(Ref.Order, file = Ref.Order.File, sep = "\n")
                          on.exit({unlink(Ref.Order.File, force = TRUE)}, add = TRUE)
                          Sorted.Common.Vcf <- sprintf("%s/(Sorted.Ref.Bam)%s", dirname(Common.Vcf), basename(Common.Vcf))
-                         File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"\n", ifelse(exists("File.Order.Command"), File.Order.Command, ""), Common.Vcf, Sorted.Common.Vcf, System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Sorted.Common.Vcf)
+                         Vcf.Sort.Command <- sprintf("\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"", System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Sorted.Common.Vcf)
+                         System.Command.Run(System.Command = Vcf.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", Common.Vcf, Sorted.Common.Vcf))
                        }
                      }, 
                      Sort = {# 直接进行排序操作
                        Sorted.Bam.Set <- sapply(Bam.Set, function(Bam){
-                         Parent.Env <- parent.env(environment())
                          Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Bam), basename(Bam))
-                         Parent.Env$File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -o \"%s\" \"%s\"\n", ifelse(exists("File.Order.Command", envir = Parent.Env), File.Order.Command, ""), Bam, Sorted.Bam, System.Samtools.Alias, Sorted.Bam, Bam)
+                         Bam.Sort.Command <- sprintf("\"%s\" sort -o \"%s\" \"%s\"", System.Samtools.Alias, Sorted.Bam, Bam)
+                         System.Command.Run(System.Command = Bam.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", Bam, Sorted.Bam))
                          return(Sorted.Bam) 
                        })
                        Ref.Order <- c(Bam.Common.SeqName, setdiff(Common.Vcf.SeqName, Bam.Common.SeqName))
@@ -197,7 +198,8 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
                        write(Ref.Order, file = Ref.Order.File, sep = "\n")
                        on.exit({unlink(Ref.Order.File, force = TRUE)}, add = TRUE)
                        Sorted.Common.Vcf <- sprintf("%s/(Sorted.Ref.Bam)%s", dirname(Common.Vcf), basename(Common.Vcf))
-                       File.Order.Command <- sprintf("%secho \"=>=>=>正在对'%s'进行排序操作 ------> '%s' ...\"\n\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"\n", File.Order.Command, Common.Vcf, Sorted.Common.Vcf, System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Sorted.Common.Vcf)
+                       Vcf.Sort.Command <- sprintf("\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"", System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Sorted.Common.Vcf)
+                       System.Command.Run(System.Command = Vcf.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", Common.Vcf, Sorted.Common.Vcf))
                      })
             }else{
               stop(sprintf("非系统的可执行命令'%s' ...", System.Samtools.Alias))

@@ -163,38 +163,9 @@ PyClone.Run <- function(PyClone.Input,
       PyClone.Output.Dir <- normalizePath(PyClone.Output.Dir, winslash = "/", mustWork = TRUE)
       PyClone.Command <- sprintf("%s --working_dir \"%s\"", PyClone.Command, PyClone.Output.Dir)
       
-      # 根据操作系统环境设置脚本内容
-      PyClone.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  PyClone.Command)
-      # 根据操作系统环境设置脚本文件
-      PyClone.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/PyClone.Command.bat", "%s/PyClone.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(PyClone.Command, PyClone.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(PyClone.Command.File)
+      # 运行指令
+      System.Command.Run(System.Command = PyClone.Command, Success.Message = sprintf("结果文件已输出至目录'%s'  ...", PyClone.Output.Dir))
       
-      # 运行PyClone
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件PyClone.Command.File
-          PyClone.Command.Run <- system(sprintf("\"%s\"", PyClone.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行, 则PyClone.Command.Run返回的状态信息为0
-          if(exists("PyClone.Command.Run") && PyClone.Command.Run == 0){
-            message(sprintf("<<====== SUCCESS MESSAGE ======>>\nPyClone.Command执行成功, 结果文件已输出至目录'%s'  ...", PyClone.Output.Dir))
-            unlink(PyClone.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nPyClone.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", PyClone.Command.File))
-          }
-        }
-      )
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.PyClone.Alias))
     }
