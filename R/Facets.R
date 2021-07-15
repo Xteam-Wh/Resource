@@ -47,7 +47,7 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
       }
       
       # 初始化SNP Pileup指令
-      SNP.Pileup.Command <- sprintf("echo \"=>=>=>正在进行SNP Pileup ...\"\n\"%s\"", System.Pileup.Alias)
+      SNP.Pileup.Command <- sprintf("\"%s\"", System.Pileup.Alias)
       
       # 配置Compress.Output[--gzip / -g]
       Compress.Output <- as.logical(Compress.Output)
@@ -213,40 +213,10 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
       }
       
       # 完成最终指令的拼接
-      SNP.Pileup.Command <- sprintf("%s%s \"%s\" \"%s.csv\" %s", ifelse(exists("File.Order.Command"), File.Order.Command, ""), SNP.Pileup.Command, Sorted.Common.Vcf, Output.Prefix, paste0(sprintf("\"%s\"", Sorted.Bam.Set), collapse = " "))
+      SNP.Pileup.Command <- sprintf("%s \"%s\" \"%s.csv\" %s", SNP.Pileup.Command, Sorted.Common.Vcf, Output.Prefix, paste0(sprintf("\"%s\"", Sorted.Bam.Set), collapse = " "))
       
-      # 根据操作系统环境设置脚本内容
-      SNP.Pileup.Command <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  SNP.Pileup.Command)
-      # 根据操作系统环境设置脚本文件
-      SNP.Pileup.Command.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/SNP.Pileup.Command.bat", "%s/SNP.Pileup.Command.sh"), getwd())
-      # 将指令写入对应系统的脚本文件
-      write(SNP.Pileup.Command, SNP.Pileup.Command.File)
-      # 赋予脚本文件读写以及可执行权限
-      Sys.chmod(SNP.Pileup.Command.File)
-      
-      # 运行SNP Pileup
-      tryCatch(
-        {
-          message("<<====== RUNNING MESSAGE ======>>")
-          # 执行脚本文件SNP.Pileup.Command.File
-          SNP.Pileup.Command.Run <- system(sprintf("\"%s\"", SNP.Pileup.Command.File))
-        },
-        error = function(e){ # 抛出错误信息
-          message(sprintf("<<====== ERROR MESSAGE ======>>\n%s", e))
-        },
-        warning = function(w){ # 抛出警告信息
-          message(sprintf("Warning: %s ...", trimws(gsub(".*\\)\\:", "", w))))
-        },
-        finally = {
-          # 如果脚本文件顺利执行，则SNP.Pileup.Command.Run返回的状态信息为0
-          if(exists("SNP.Pileup.Command.Run") && SNP.Pileup.Command.Run == 0){
-            message(sprintf("<<===== SUCCESS MESSAGE =====>>\nSNP.Pileup.Command执行成功, 结果已输出至文件'%s' ...", normalizePath(SNP.Pileup.Output, winslash = "/", mustWork = TRUE)))
-            unlink(SNP.Pileup.Command.File, force = TRUE)
-          }else{
-            message(sprintf("<<====== ERROR MESSAGE ======>>\nSNP.Pileup.Command执行过程中发生了错误, 请通过查看'RUNNING MESSAGE'中的信息或通过控制台运行脚本文件'%s'来查看具体错误 ...", SNP.Pileup.Command.File))
-          }
-        }
-      )
+      # 运行指令
+      System.Command.Run(System.Command = Vcf.Sort.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", normalizePath(SNP.Pileup.Output, winslash = "/", mustWork = TRUE)))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Pileup.Alias))

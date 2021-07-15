@@ -37,10 +37,10 @@ System.Command.Run <- function(System.Command, Success.Message = NULL){
       Command.Run.Status <- system(sprintf("\"%s\"", Command.Script.File))
     },
     error = function(Error.Message){
-      message(sprintf("ERROR: %S", Error.Message))
+      stop(Error.Message, call. = FALSE)
     },
     warning = function(Warning.Message){
-      message(sprintf("Warning: %S", Warning.Message))
+      warning(Warning.Message, call. = FALSE)
     },
     finally = {
       unlink(Command.Script.File, force = TRUE)
