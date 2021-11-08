@@ -17,14 +17,14 @@
 ##' @param Pseudo.Snps numeric 设置虚拟SNP间隔, 即若每Pseudo.Snps个碱基位置上没有SNP则插入一个标记该区间总read数的空记录; 默认0
 ##' @param Min.Map.Quality numeric 设置比对质量的最小阈值(针对MAPQ信息); 默认0
 ##' @param Min.Base.Quality numeric 设置序列质量的最小阈值(针对QUAL信息); 默认0
-##' @param Min.Read.Counts numeric[] 设置输出位点在正常样本和肿瘤样本中最小read数; 默认c(0, 0)
+##' @param Min.Read.Counts numeric[] 设置输出位点在各样本中最小read数(设置单个值时将应用于所有样本); 默认0
 ##' @param System.Samtools.Alias character Samtools软件在系统中的可执行命令名, 默认为"samtools"
 ##' @param System.Bedtools.Alias character Bedtools软件在系统中的可执行命令名, 默认为"bedtools"
 ##' @param System.Pileup.Alias character SNP Pileup软件在系统中的可执行命令名, 默认为"snp-pileup"
 Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf, 
                               Output.Prefix = NULL, Sort.Operation  = c("Auto", "Sort", "None"), 
                               Compress.Output = TRUE, Show.Progress = FALSE, Skip.Anomalous = TRUE, Check.Overlaps = TRUE, 
-                              Max.Depth = 4000, Pseudo.Snps = 0, Min.Map.Quality = 0, Min.Base.Quality = 0, Min.Read.Counts = c(0, 0), 
+                              Max.Depth = 4000, Pseudo.Snps = 0, Min.Map.Quality = 0, Min.Base.Quality = 0, Min.Read.Counts = 0, 
                               System.Samtools.Alias = "samtools", System.Bedtools.Alias = "bedtools", System.Pileup.Alias = "snp-pileup"){
   
   System.Pileup.Alias <- as.character(System.Pileup.Alias)
@@ -115,10 +115,16 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
       
       # 配置Min.Read.Counts[--min-read-counts / -r]
       Min.Read.Counts <- as.numeric(Min.Read.Counts)
-      if(length(Min.Read.Counts) == 2 && all(Min.Read.Counts >= 0) && all(Min.Read.Counts %% 1 == 0)){
+      if(length(Min.Read.Counts) == 1){
+        
+      }
+      if(all(Min.Read.Counts >= 0) && all(Min.Read.Counts %% 1 == 0) && (length(Min.Read.Counts) == 1 || length(Min.Read.Counts) == length(Bam.Set))){
+        if(length(Min.Read.Counts) == 1){
+          Min.Read.Counts <- rep(Min.Read.Counts, length(Bam.Set))
+        }
         SNP.Pileup.Command <- sprintf("%s --min-read-counts %s", SNP.Pileup.Command, paste0(Min.Read.Counts, collapse = ","))
       }else{
-        stop("'Min.Read.Counts'应为大于等于0的包含两个元素的整型numeric向量 ...")
+        stop("'Min.Read.Counts'应为单一大于等于0的整型numeric值或与'Bam.Set'等长的numeric向量 ...")
       }
       
       # 配置Output.Prefix
@@ -216,7 +222,7 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
       SNP.Pileup.Command <- sprintf("%s \"%s\" \"%s.csv\" %s", SNP.Pileup.Command, Sorted.Common.Vcf, Output.Prefix, paste0(sprintf("\"%s\"", Sorted.Bam.Set), collapse = " "))
       
       # 运行指令
-      System.Command.Run(System.Command = Vcf.Sort.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", normalizePath(SNP.Pileup.Output, winslash = "/", mustWork = TRUE)))
+      System.Command.Run(System.Command = SNP.Pileup.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", normalizePath(SNP.Pileup.Output, winslash = "/", mustWork = FALSE)))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Pileup.Alias))
