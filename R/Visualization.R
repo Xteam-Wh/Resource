@@ -189,9 +189,10 @@ Venn.View <- function(..., Sets.List = NULL,
 ##' @param Feature.List.Data list 特征list数据集合，每个特征信号对应一个list, 每个list包含的元素与可变参数(...)传入的每个list一致
 ##' @param Auto.Marge logical 设置是否自动对各图表进行合并
 ##' @param SeqName.Ratio numeric 设置组合图标中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE时生效
+##' @param Feature.Name.Aligned logical 设置各图表纵坐标title是否保持对齐, 当且仅当Auto.Marge = TRUE时生效
 ##' @param Genome.Assemblies character 设置基因组版本号, 可选unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))
 ##' @return 若Auto.Marge = TRUE, 则返回组合后的绘图信息; 若Auto.Marge = FALSE, 则返每个特征信号的绘图信息以及上下基因组条段绘图信息
-Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqName.Ratio = 0.125,  
+Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqName.Ratio = 0.125,  Feature.Name.Aligned = FALSE, 
                         Genome.Assemblies = unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))){
   
   
@@ -358,19 +359,22 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
           return(Feature.Plot)
         })
         SeqName.Ratio <- as.numeric(SeqName.Ratio)
+        Feature.Name.Aligned <- as.logical(Feature.Name.Aligned)
         if(length(SeqName.Ratio) == 1 && SeqName.Ratio > 0 && SeqName.Ratio < 1){
-          return(cowplot::plot_grid(plotlist = c(SeqName.Plots[1], Feature.Plots, SeqName.Plots[2]), ncol = 1, rel_heights = c(SeqName.Ratio/2, rep((1 - SeqName.Ratio)/length(Feature.Plots), length(Feature.Plots)), SeqName.Ratio/2), align = "v", axis = "lr"))
+          if(length(Feature.Name.Aligned) == 1){
+            return(cowplot::plot_grid(plotlist = c(SeqName.Plots[1], Feature.Plots, SeqName.Plots[2]), ncol = 1, rel_heights = c(SeqName.Ratio/2, rep((1 - SeqName.Ratio)/length(Feature.Plots), length(Feature.Plots)), SeqName.Ratio/2), align = "v", axis = "lr", greedy = Feature.Name.Aligned))
+          }else{
+            stop("'Feature.Name.Aligned'应为单一的logical值 ...")
+          }
         }else{
           stop("'SeqName.Ratio'应为单一的介于(0, 1)之间的numeric值 ...")
         }
-        
       }else{
         return(list(SeqName.Plots = SeqName.Plots, Feature.Plots = Feature.Plots))
       }
     }else{
       stop("'Auto.Marge'应为单一的logical值 ...")
     }
-    
   }else{
     stop(sprintf("'Point.Data'或'Segment.Data'的'SeqName'不能为Null且元素应均存在于(%s)", paste0(Genome.Seqinfo.SeqName, collapse = ", ")))
   }
