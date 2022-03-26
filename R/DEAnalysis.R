@@ -1,25 +1,8 @@
 ##############################函数描述##############################
-# "DE.FPKM.To.TPM"将FPKM表达谱数据转换为TPM表达谱数据
 # "DE.Limma"通过limma包进行差异表达分析
 # "DE.EdgeR"通过edgeR包进行差异表达分析
 # "DE.DESeq2" 通过DESeq2包进行差异表达分析
 ####################################################################
-
-
-##' @description 将FPKM表达谱数据转换为TPM表达谱数据
-##' @author Xteam.Wh
-##' @param FPKM.Exp.Data matrix | data.frame FPKM表达谱数据, 行为基因列为样本
-##' @return data.frame TPM表达谱数据, 行为基因列为样本
-DE.FPKM.To.TPM <- function(FPKM.Exp.Data){
-  FPKM.Exp.Data <- as.data.frame(FPKM.Exp.Data)
-  return(
-    as.data.frame(
-      apply(FPKM.Exp.Data,2,function(Sample.Data){
-        return(exp(log(Sample.Data) - log(sum(Sample.Data)) + log(1e6)))
-      })
-    )
-  )
-}
 
 
 ##' @description 通过limma进行差异表达分析
@@ -76,7 +59,7 @@ DE.Limma <- function(Exp.Data, Is.Case, Is.Voom = FALSE, Voom.Plot = FALSE, Adj.
 ##' @param Is.Case logical[] 标志表达谱各样本是否为case样本, 要与表达普样本顺序一一对应
 ##' @param Normalize.Method character 计算归一化因子时所使用的归一化方法, 可选("TMM", "TMMwsp", "RLE", "upperquartile", "none");  默认"TMM"
 ##' @param Adj.Method character 差异表达分析p值校正方法, 可从"p.adjust.methods"中选择; 默认"holm"
-##' @return data.frame limma差异表达分析的结果, 包含"logFC"、"PValue"、"FDR"等信息
+##' @return data.frame edgeR差异表达分析的结果, 包含"logFC"、"PValue"、"FDR"等信息
 DE.EdgeR <- function(Exp.Data, Is.Case, Normalize.Method=c("TMM", "TMMwsp", "RLE", "upperquartile", "none"), Adj.Method = p.adjust.methods){
   Is.Case <- as.logical(Is.Case)
   Exp.Data <- as.data.frame(Exp.Data)
