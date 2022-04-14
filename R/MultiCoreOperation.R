@@ -9,7 +9,7 @@
 ##' @param Data 用于进行并行运算的数据(数据的适用格式与迭代方式式均取决于参数"Parallel.Type")
 ##' @param Function funcction 要使用的函数, 函数名或直接进行自定义函数的编写
 ##' @param Cores.Need numeric 预计要使用的线程(CPU内核)数, 默认2个
-##' @param Cores.Type Cores.Type 使用的线程(CPU内核)的类型(逻辑型, 物理型), 可选("Logical", "Physical")
+##' @param Cores.Type character 使用的线程(CPU内核)的类型(逻辑型, 物理型), 可选("Logical", "Physical")
 ##' @param Common.Packages character[] 并行环境需要共享使用的R包集合, 当且仅当操作系统为Windows时生效, 默认为当前环境已载入的所有R包
 ##' @param Common.Objects character[] 并行环境需要共享使用的变量集合, 当且仅当操作系统为Windows时生效, 默认为.GlobalEnv环境中存在的所有变量
 ##' @param Parallel.Type character 进行并行运算的方式, 可选("ParApply", "ParLapply", "ParSapply")效果等同于基础包的("apply", "lapply", "sapply")
@@ -72,7 +72,7 @@ Parallel.Execut <- function(Data, Function, Cores.Need = 2, Cores.Type = c("Logi
 ##' @param Data 用于进行并行运算的数据(对于vector和list对每一个成员进行迭代, 对于matrix和data.frame对每列进行迭代, 对于array则对每个元素进行迭代)
 ##' @param Function funcction 要使用的函数, 函数名或直接进行自定义函数的编写
 ##' @param Cores.Need numeric 预计要使用的线程(CPU内核)数, 默认2个
-##' @param Cores.Type Cores.Type 使用的线程(CPU内核)的类型(逻辑型, 物理型), 可选("Logical", "Physical")
+##' @param Cores.Type character 使用的线程(CPU内核)的类型(逻辑型, 物理型), 可选("Logical", "Physical")
 ##' @param Common.Packages character[] 并行环境需要共享使用的R包集合, 当且仅当操作系统为Windows时生效, 默认为当前环境已载入的所有R包
 ##' @param Common.Objects character[] 并行环境需要共享使用的变量集合, 当且仅当操作系统为Windows时生效, 默认为.GlobalEnv环境中存在的所有变量
 ##' @return list 每条迭代数据通过函数"Function"操作后返回的结果
