@@ -35,7 +35,7 @@ Venn.View <- function(..., Sets.List = NULL,
   ############
   Sets.List <- lapply(c(list(...), as.list(Sets.List)), function(Set){ return(unique(as.character(Set))) })
   Sets.List.Num <- length(Sets.List)
-  Sets.List.Member.Num <- length(unique(as.character(Sets.List)))
+  Sets.List.Member.Num <- length(unique(unlist(Sets.List)))
   
   if(Sets.List.Num < 8){
     
@@ -62,7 +62,7 @@ Venn.View <- function(..., Sets.List = NULL,
     
     Sets.Fill.Colour <- as.character(Sets.Fill.Colour)
     if(length(Sets.Fill.Colour) == 0){
-      Sets.Fill.Colour <- RColourBrewer::brewer.pal(7, "Set2")[1:Sets.List.Num]
+      Sets.Fill.Colour <- RColorBrewer::brewer.pal(7, "Set2")[1:Sets.List.Num]
     }else if(length(Sets.Fill.Colour) != Sets.List.Num){
       stop(sprintf("Sets.Fill.Colour: 需要的颜色数目为【%s】, 给定的颜色数目为【%s】 ...", length(Sets.Fill.Colour), Sets.List.Num))
     }
@@ -134,7 +134,7 @@ Venn.View <- function(..., Sets.List = NULL,
     ############
     ## 2.获取ggplot格式的venn图信息并对其进行修改
     ############
-    plot <- venn::venn(Sets.List, zcolour = Sets.Fill.Colour, ilabels = TRUE, opacity = Sets.Fill.Opacity, box = FALSE, ggplot = TRUE)
+    plot <- venn::venn(Sets.List, zcolor = Sets.Fill.Colour, ilabels = TRUE, opacity = Sets.Fill.Opacity, box = FALSE, ggplot = TRUE)
     Layers.Num <- length(plot$layers)
     Layers.Fill.Index <- 1:Sets.List.Num + 1
     Layers.Name.Index <- tail(1:Layers.Num, Sets.List.Num)
@@ -154,7 +154,7 @@ Venn.View <- function(..., Sets.List = NULL,
       }else if(Index %in% Layers.Intersection.Index){
         Layer$aes_params$size <- Intersection.Label.Size
         Layer$aes_params$colour <- scales::alpha(Intersection.Label.Colour, Intersection.Label.Opacity)
-        if(Show.Percentage){ Layer$aes_params$label <- paste0(sprintf("%s\n%.3f", Layer$aes_params$label, as.numeric(Layer$aes_params$label)/Sets.List.Member.Num), "%") }
+        if(Show.Percentage){ Layer$aes_params$label <- sprintf("%s\n%s%%", Layer$aes_params$label, round(as.numeric(Layer$aes_params$label)/Sets.List.Member.Num, 5)*100) }
       }
       return(Layer)
     })
