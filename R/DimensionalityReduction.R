@@ -7,7 +7,7 @@
 ##' @author Xteam.Wh
 ##' @param Data matrix | data.frame 特征矩阵, 要求行为样本, 列为特征
 ##' @param Is.Scale logical 是否对特征矩阵进行标准化(默认进行中心化); 默认TRUE
-##' @param Min.Contribution numeric 最小累积贡献度限制, [0,100]; 默认80
+##' @param Min.Contribution numeric 设置最小累积贡献度限制, [0,100]; 默认80
 ##' @return list 包含达到Min.Contribution的主成分的样本得分矩阵、特征载荷矩阵以及特征贡献得分矩阵
 DR.PCA <- function(Data, Is.Scale = T, Min.Contribution = 80){
   library(FactoMineR)
@@ -38,7 +38,7 @@ DR.PCA <- function(Data, Is.Scale = T, Min.Contribution = 80){
         list(Pc.Scores = Pc.Scores, Pc.Loadings = Pc.Loadings, Pc.Contribution = Pc.Contribution)
       )
     }else{
-      stop("'Min.Contribution'应为介于[0,1]之间的单一的numeric值 ...")
+      stop("'Min.Contribution'应为介于[0,100]之间的单一的numeric值 ...")
     }
   }else{
     stop("'Is.Scale'应为单一的logica值 ...")
