@@ -7,7 +7,7 @@
 ##' @description 使用逐步回归的三种方法通过AIC筛选特征
 ##' @author  Xteam.Wh
 ##' @param Data matrix | data.frame 特征矩阵(行为样本列为特征,最后一列为因变量)
-##' @param Is.Reg logical 是否为回归模型筛选特征, 默认为True, 否则所选特征应用于分类模型
+##' @param Is.Reg logical 是否为回归模型筛选特征, 否则所选特征应用于分类模型, 默认True
 ##' @return 逐步回归三种方法筛选的特征集合
 Feature.Selection.Stepwise <- function(Data, Is.Reg = TRUE){
   library(MASS)
@@ -45,8 +45,8 @@ Feature.Selection.Stepwise <- function(Data, Is.Reg = TRUE){
 ##' @param Data matrix | data.frame 特征矩阵(行为样本列为特征, 无因变量)
 ##' @param Time numeric[] 样本(患者)无复发或死亡的生存时间
 ##' @param Is.Event logical[] 样本(患者)是否发生复发或死亡等截断事件
-##' @param Ties.Method character 指定估计生存率所用的方法, 可选值("efron","breslow","exact"); 默认"efron"
-##' @param Analysis.Mode character 指定分析模式(单因素/多因素), 可选值("Single", "Multiple"); 默认"Single"
+##' @param Ties.Method character 指定估计生存率所用的方法, 可选("efron","breslow","exact"); 默认"efron"
+##' @param Analysis.Mode character 指定分析模式(单因素/多因素), 可选("Single", "Multiple"); 默认"Single"
 ##' @return data.frame 包含所有特征的信息, 包含"Characteristics、HR、%95 CI、P.Value"
 Feature.Selection.Cox <- function(Data, Time, Is.Event, 
                                   Ties.Method = c("efron","breslow","exact"), Analysis.Mode = c("Single", "Multiple")){

@@ -9,7 +9,7 @@
 ##' @param Values character[] 待转换的基因集合
 ##' @param Values.Type character 待转换的基因集合的基因类型
 ##' @param Conversion.Type character[] 期望转换的基因类型(支持多类别转化)
-##' @param Run.Model character 运行模式(自动模式或引导模式), 可选("Auto", "Lead")
+##' @param Run.Model character 运行模式(自动模式或引导模式), 可选("Auto", "Lead"); 默认"Auto"
 ##' @return data.frame 对应'Values'集合以及对应各'Conversion.Type'类型的转换后的结果, 未能匹配的基因转换结果为NA
 Humam.Gene.Conversion.Local <- function(Values, 
                                         Values.Type, 
@@ -67,7 +67,7 @@ Humam.Gene.Conversion.Local <- function(Values,
 ##' @param Values character[] 待转换的基因集合
 ##' @param Values.Type character 待转换的基因集合的基因类型
 ##' @param Conversion.Type character[] 期望转换的基因类型
-##' @param Run.Model character 运行模式(自动模式或引导模式), 可选("Auto", "Lead")
+##' @param Run.Model character 运行模式(自动模式或引导模式), 可选("Auto", "Lead"); 默认"Auto"
 ##' @return data.frame 对应'Values'集合以及对应各'Conversion.Type'类型的转换后的结果, 未能匹配的基因转换结果为NA
 Humam.Gene.Conversion.Internet <- function(Values, 
                                            Values.Type, 

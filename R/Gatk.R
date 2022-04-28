@@ -11,8 +11,8 @@
 ##' @description 通过R函数传参调用Gatk GetSampleName获取SAM/BAM/CRAM的样本名[文件头标签@RG的SM值]
 ##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
 ##' @param AM.Input character 要读取的SAM/BAM/CRAM文件
-##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认为"java"
-##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等
+##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认"java"
+##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等; 默认NULL
 ##' @return character SAM/BAM/CRIM文件记录的样本名
 Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "java", Java.Options.Settings = NULL){
   
@@ -70,16 +70,16 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
 ##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
 ##' @param Genome.Refence character 参考基因组文件[fasta格式, 且要求所在目录下同时含有对应的索引文件与序列字典文件]
 ##' @param AM.Input character[] 要读取的SAM/BAM/CRAM文件集合[来自同一个体，且要求所在目录下同时含有对应的索引文件]
-##' @param Output.Prefix character 结果文件(vcf格式)前缀[可携带路径]; 默认为当前工作目录下的"Gatk.Mutect2"
+##' @param Output.Prefix character 结果文件(vcf格式)前缀[可携带路径]; 默认NULL, 即当前工作目录下的"Gatk.Mutect2"
 ##' @param Output.Compressed logical 是否对结果文件进行压缩处理[Xxx.vcf.gz]; 默认FALSE
-##' @param With.F1R2.Counts character 是否为肿瘤样本统计F1R2计数[将输出一个Xxx.tar.gz文件, 可用于后续模型方向偏差参数的估计], 主要用于测序前在单链上发生取代错误的样本(FFPE肿瘤样本); 默认为FALSE
+##' @param With.F1R2.Counts character 是否为肿瘤样本统计F1R2计数[将输出一个Xxx.tar.gz文件, 可用于后续模型方向偏差参数的估计], 主要用于测序前在单链上发生取代错误的样本(FFPE肿瘤样本); 默认FALSE
 ##' @param Keep.Diff.Contig.Reads logical 是否禁用过滤器"MateOnSameContigOrNoMappedMateReadFilter", 保留匹配到不同重叠群(contig)的的paired reads; 默认FALSE
-##' @param Normal.Samples character[] 指定正常样本SAM/BAM/CRIM文件对应的样本名[文件头标签@RG的SM值], 可通过Gatk GetSampleName功能提取
-##' @param Normal.Panel character 指定由正常组织数据(不同个体)构建的PON参考文件[vcf格式(支持.gz压缩格式), 且要求所在目录下同时含有对应的索引文件], 有助于过滤掉常见的种系突变位点(“正常”是指源自健康组织，被认为没有任何体细胞变化; 样本应来自年轻且健康的受试者, 通常来自血液样本)
-##' @param Germline.Resource character 指定群体种系资源参考文件[vcf格式(支持.gz压缩格式), 且要求所在目录下同时含有对应的索引文件], 用于获取种群中变异等位基因的频率，从而提供样本在种系中携带变异等位基因的先验概率(种系资源必须包含等位特异频率，因此必须在INFO字段中包含AF注释)
+##' @param Normal.Samples character[] 指定正常样本SAM/BAM/CRIM文件对应的样本名[文件头标签@RG的SM值], 可通过Gatk GetSampleName功能提取; 默认NULL
+##' @param Normal.Panel character 指定由正常组织数据(不同个体)构建的PON参考文件[vcf格式(支持.gz压缩格式), 且要求所在目录下同时含有对应的索引文件], 有助于过滤掉常见的种系突变位点(“正常”是指源自健康组织，被认为没有任何体细胞变化; 样本应来自年轻且健康的受试者, 通常来自血液样本); 默认NULL
+##' @param Germline.Resource character 指定群体种系资源参考文件[vcf格式(支持.gz压缩格式), 且要求所在目录下同时含有对应的索引文件], 用于获取种群中变异等位基因的频率，从而提供样本在种系中携带变异等位基因的先验概率(种系资源必须包含等位特异频率，因此必须在INFO字段中包含AF注释); 默认NULL
 ##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认为"java"
-##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等
-##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用
+##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等; 默认NULL
+##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用; 默认NULL
 Gatk.Mutect2 <- function(Gatk.Local.Jar, 
                          Genome.Refence, AM.Input, 
                          Output.Prefix = NULL, Output.Compressed = FALSE, 
@@ -223,10 +223,10 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
 ##' @description 通过R函数传参调用Gatk LearnReadOrientationModel进行模型学习, 估计方向偏差参数(先验概率)
 ##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
 ##' @param F1R2.Counts.Input character[] 由Gatk Mutect2输出的肿瘤样本F1R2计数文件[来自同一个体]
-##' @param Output.Prefix character 结果文件前缀[可携带路径]; 默认为当前工作目录下的"Gatk.LearnReadOrientationModel"
+##' @param Output.Prefix character 结果文件前缀[可携带路径]; 默认NULL, 即当前工作目录下的"Gatk.LearnReadOrientationModel"
 ##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认为"java"
-##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等
-##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用
+##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等; 默认NULL
+##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用; 默认NULL
 Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar, 
                                            F1R2.Counts.Input, Output.Prefix = NULL, 
                                            System.Java.Alias = "java", Java.Options.Settings = NULL, Other.Options.Settings = NULL){
@@ -305,10 +305,10 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
 ##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
 ##' @param AM.Input character[] 要读取的SAM/BAM/CRAM文件集合[来自同一个体同一类型，且要求所在目录下同时含有对应的索引文件]
 ##' @param Germline.Variant.Sites character 一个通用的种系变异位点参考文件[vcf格式(支持.gz压缩格式), 且要求所在目录下同时含有对应的索引文件], 此资源必须只包含双等位SNP, 且必须在INFO字段中包含AF注释
-##' @param Output.Prefix character 结果文件前缀[可携带路径]; 默认为当前工作目录下的"Gatk.GetPileupSummaries"
+##' @param Output.Prefix character 结果文件前缀[可携带路径]; 默认NULL, 即当前工作目录下的"Gatk.GetPileupSummaries"
 ##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认为"java"
-##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等
-##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用
+##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等; 默认NULL
+##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用; 默认NULL
 Gatk.GetPileupSummaries <- function(Gatk.Local.Jar, 
                                     AM.Input, Germline.Variant.Sites, Output.Prefix = NULL, 
                                     System.Java.Alias = "java", Java.Options.Settings = NULL, Other.Options.Settings = NULL){
@@ -395,14 +395,14 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
 ##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
 ##' @param Genome.Refence character 参考基因组文件[fasta格式, 且要求同所在目录下同时含有对应的索引文件与序列字典文件]
 ##' @param Mutect2.Calling.Result character 由Gatk Mutect2识别的体突变结果文件[vcf格式(支持.gz压缩格式), 且要求所在目录下同时含有对应的索引文件以及stas文件]
-##' @param Output.Prefix character 结果文件(vcf格式)前缀[可携带路径]; 默认为当前工作目录下的"Gatk.FilterMutectCalls"
+##' @param Output.Prefix character 结果文件(vcf格式)前缀[可携带路径]; 默认NULL, 即当前工作目录下的"Gatk.FilterMutectCalls"
 ##' @param Output.Compressed logical 是否对结果文件进行压缩处理[Xxx.vcf.gz]; 默认FALSE
-##' @param Orientation.Models character[] 由Gatk LearnReadOrientationModel针对肿瘤样进行模型学习的结果文件[来自同一个体]
-##' @param Contamination.Tables character[] 由Gatk CalculateContamination针对肿瘤样本计算的来自交叉样本污染的reads分数文件[来自同一个体]
-##' @param Tumor.Segmentations character[] 由Gatk CalculateContamination针对肿瘤样本按次等位基因分数划分区段文件[来自同一个体]
+##' @param Orientation.Models character[] 由Gatk LearnReadOrientationModel针对肿瘤样进行模型学习的结果文件[来自同一个体]; 默认NULL
+##' @param Contamination.Tables character[] 由Gatk CalculateContamination针对肿瘤样本计算的来自交叉样本污染的reads分数文件[来自同一个体]; 默认NULL
+##' @param Tumor.Segmentations character[] 由Gatk CalculateContamination针对肿瘤样本按次等位基因分数划分区段文件[来自同一个体]; 默认NULL
 ##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认为"java"
-##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等
-##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用
+##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等; 默认NULL
+##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用; 默认NULL
 Gatk.FilterMutectCalls <- function(Gatk.Local.Jar, 
                                    Genome.Refence, Mutect2.Calling.Result,  
                                    Output.Prefix = NULL, Output.Compressed = FALSE, 

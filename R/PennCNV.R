@@ -8,9 +8,9 @@
 ##' @param PennCNV.Input character[] 制表符分割的信号强度文件集合, 每个文件必须包含三列信息[Name(标记名称, 必须为首列), *.B Allele Freq(BAF)]; 若未提供Position.File, 则还需包含信息[Chr(染色体), Position(位置)]; 列名需严格按照要求设置
 ##' @param Position.File character 指定标记坐标信息文件, 文件必须包含三列信息[Name(标记名称, 必须为首列), Chr(染色体), Position(位置)]; 列名需严格按照要求设置, 不存在于该文件中的标记信息不会计算PFB值
 ############' [注: 若设置了Position.File, 则PennCNV默认仅处理信号强度文件与Position.File共有的标记, 即共有的Name信息所在行]
-##' @param Output.Prefix character 结果文件的前缀名[可携带路径]; 默认为当前工作目录下的"PennCNV.MakePFB.Result"
-##' @param PennCNV.Dir character PennCNV的安装目录(必要pl文件所存在的目录), 设为NULL则默认安装目录为当前工作路径
-##' @param System.Perl.Alias character Perl软件在系统中的可执行命令名; 默认为"perl"
+##' @param Output.Prefix character 结果文件的前缀名[可携带路径]; 默认NULL, 即当前工作目录下的"PennCNV.MakePFB.Result"
+##' @param PennCNV.Dir character PennCNV的安装目录(必要pl文件所存在的目录); 默认NULL, 即当前工作目录
+##' @param System.Perl.Alias character Perl软件在系统中的可执行命令名; 默认"perl"
 PennCNV.MakePFB <- function(PennCNV.Input, 
                             Position.File = NULL, Output.Prefix = NULL, 
                             PennCNV.Dir = NULL, System.Perl.Alias = "perl"){
@@ -85,16 +85,16 @@ PennCNV.MakePFB <- function(PennCNV.Input,
 ##' @param PFB.File character 指定PFB(Population frequency of B allele)文件, 提供每个标记的PFB信息, 必须包含四列信息[Name(标记名称), Chr(染色体), Position(位置), PFB(B等位基因的群体频率)], 列名可有可无, 但四列信息顺序需严格按照要求设置
 ############' [注: PennCNV默认仅处理信号强度文件与PFB文件共有的标记, 即共有的Name信息所在行]
 ##' @param Target.Chr character 处理的染色体类型, 可选("Autosome", "Chr.X", "Chr.Y"); 默认"Autosome"
-##' @param PennCNV.Dir character PennCNV的安装目录(必要pl文件所存在的目录), 设为NULL则默认安装目录为当前工作路径
-##' @param Output.Prefix character 结果文件的前缀名[可携带路径]; 默认为当前工作目录下的"PennCNV.Calling.Result"
+##' @param PennCNV.Dir character PennCNV的安装目录(必要pl文件所存在的目录); 默认NULL, 即当前工作目录
+##' @param Output.Prefix character 结果文件的前缀名[可携带路径]; 默认NULL, 即当前工作目录下的"PennCNV.Calling.Result"
 ##' @param Output.Tab logical 是否将结果格式化为以制表符分隔的文件; 默认FALSE
-##' @param GC.Model.File character 指定GCModel文件, 提供每个标记记周围1Mb基因组区的GC含量(每边500kb), 用于矫正基因组波(genomic waves)的影响, 必须包含四列信息[Name(标记名称), Chr(染色体), Position(位置), GC(GC含量百分比, 0-100)], 列名可有可无, 但四列信息顺序需严格按照要求设置
+##' @param GC.Model.File character 指定GCModel文件, 提供每个标记记周围1Mb基因组区的GC含量(每边500kb), 用于矫正基因组波(genomic waves)的影响, 必须包含四列信息[Name(标记名称), Chr(染色体), Position(位置), GC(GC含量百分比, 0-100)], 列名可有可无, 但四列信息顺序需严格按照要求设置; 默认NULL
 ##' @param Sample.Sex character[] 指定信号强度文件对应样本的性别(male/female), 用于X染色体CNV的推断, 与'PennCNV.Input'保持一一对应的关系, 则认为所有样本性别一致; 也可由程序自动识别性别, 但推荐通过该参数指定
 ##' @param With.Confidence logical 是否为每个识别到的CNV计算一个置信度分数; 默认FALSE
 ##' @param PennCNV.Analysis.Type character 指定分析的信号强度文件的类型, 可选("CHIP","WGS"), "CHIP"表示数据来自芯片平台, "WGS"表示数据由PennCNV-Seq从全基因组测序数据转换而来的; 默认"CHIP"
-##' @param Coordinate.From.Input character 是否从输入的信号强度文件中来获取标记位点的位置信息; 默认FALSE, 即从PFB文件中获取标记位点的位置信息
-##' @param System.Perl.Alias character Perl软件在系统中的可执行命令名; 默认为"perl"
-##' @param Other.Options.Settings 其他参数的设置, 将被拼接到指令中进行调用
+##' @param Coordinate.From.Input character 是否从输入的信号强度文件中来获取标记位点的位置信息, 否则从PFB文件中获取标记位点的位置信息; 默认FALSE
+##' @param System.Perl.Alias character Perl软件在系统中的可执行命令名; 默认"perl"
+##' @param Other.Options.Settings 其他参数的设置, 将被拼接到指令中进行调用; 默认NULL
 PennCNV.Calling <- function(PennCNV.Input, 
                         HMM.File, PFB.File, 
                         Target.Chr = c("Autosome", "Chr.X", "Chr.Y"),

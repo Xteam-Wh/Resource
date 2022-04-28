@@ -6,28 +6,28 @@
 ##' @description 通过R函数传参调用PyClone进行分析
 ##' @author Xteam.Wh
 ##' @param PyClone.Input characcter[] tsv格式文件集合, 每个tsv文件都应该至少包含以下六列信息:
-###############' mutation_id ——> 突变位点的唯一标识, 跨数据集应该是相同的(个人建议格式为: "gene:Chromosomes:position")
-###############' ref_counts  ——> 突变位点与reference allele相匹配的locus的reads数
-###############' var_counts  ——> 突变位点与variant allele相匹配的locus的reads数
-###############' normal_cn   ——> 正常细胞该位点对应locus的拷贝数, 对于人类常染色体来说是2(性染色体除外)
-###############' minor_cn    ——> 肿瘤细胞该位点对应minor allele的拷贝数
-###############' major_cn    ——> 肿瘤细胞该位点对应major allele的拷贝数
-##' @param PyClone.Output.Dir characcter PyClone分析结果的存放目录; 默认为当前工作路径下的"PyClone.Output.Dir"目录
-##' @param Config.Extras.File characcter 具有用于分析的额外参数的yaml配置文件的路径
-##' @param Samples characcter[] 设置样本的名称, 应与"PyClone.Input"保持一一对应的关系
-##' @param Seed integer 随机种子, 便于结果的重现
-##' @param Max.Clusters integer 最大聚类簇数量, 设置该参数后, PyClone聚类结果的聚类簇数目不会超过该值
-##' @param Min.Cluster.Size integer 最小聚类簇容量, 设置该参数后, PyClone聚类结果中样本含量低于该值的簇将不参与可视化
-##' @param Tumour.Contents nurmic 肿瘤纯度, 应与"PyClone.Input"保持一一对应的关系; 若只给定一个值, 则认为所有样本的肿瘤纯度一致
+###############' mutation_id: 突变位点的唯一标识, 跨数据集应该是相同的(个人建议格式为: "Gene:Chromosomes:Position")
+###############' ref_counts: 突变位点与reference allele相匹配的locus的reads数
+###############' var_counts: 突变位点与variant allele相匹配的locus的reads数
+###############' normal_cn: 正常细胞该位点对应locus的拷贝数, 对于人类常染色体来说是2(性染色体除外)
+###############' minor_cn: 肿瘤细胞该位点对应minor allele的拷贝数
+###############' major_cn: 肿瘤细胞该位点对应major allele的拷贝数
+##' @param PyClone.Output.Dir characcter PyClone分析结果的存放目录; 默认NULL, 即为当前工作目录下的"PyClone.Output.Dir"目录
+##' @param Config.Extras.File characcter 具有用于分析的额外参数的yaml配置文件的路径; 默认NULL
+##' @param Samples characcter[] 设置样本的名称, 应与"PyClone.Input"保持一一对应的关系; 默认NULL
+##' @param Seed integer 随机种子, 便于结果的重现; 默认NULL
+##' @param Max.Clusters integer 最大聚类簇数量, 设置该参数后, PyClone聚类结果的聚类簇数目不会超过该值; 默认NULL
+##' @param Min.Cluster.Size integer 最小聚类簇容量, 设置该参数后, PyClone聚类结果中样本含量低于该值的簇将不参与可视化; 默认NULL
+##' @param Tumour.Contents nurmic 肿瘤纯度, 应与"PyClone.Input"保持一一对应的关系; 若只给定一个值, 则认为所有样本的肿瘤纯度一致; 默认1
 ##' @param Num.Iters integer MCMC总迭代次数; 默认10000
 ##' @param Burnin integer MCMC不稳定迭代的数量(最初的一些MCMC迭代是不稳定的, 在后续分析时需要去除), 一般设置为MCMC总迭代次数的10%; 默认0
 ##' @param Thin integer MCMC迭代稀薄数, 在去除前"Burnin"个不稳定迭代后, 从剩余的MCMC迭代中, 每"Thin"个迭代中取第一个用于后续分析; 默认1
 ##' @param Mesh.Size integer 用于近似聚类后验的点数; 默认101
-##' @param System.PyClone.Alias character PyClone软件在系统中的可执行命令名, 默认为"PyClone"
-##' @param Plot.File.Format character 图片的输出格式, 支持"pdf"与"svg"; 默认"pdf"
+##' @param System.PyClone.Alias character PyClone软件在系统中的可执行命令名, 默认"PyClone"
+##' @param Plot.File.Format character 图片的输出格式, 可选("pdf", "svg"); 默认"pdf"
 ##' @param Init.Method character 初始化Dirichlet Process(DP)聚类算法, 可选("disconnected", "connected"), "disconnected"将每个突变位点单独视为一个集群, "connected"将所有位点视为一个集群; 默认"disconnected"
 ##' @param Density character 计算后验概率采用的密度分布函数, 可选("pyclone_beta_binomial", "pyclone_binomial"), "pyclone_beta_binomial"为beta二项分布, "pyclone_binomial"为二项分布;  默认"pyclone_beta_binomial"
-##' @param Prior character 设置拷贝数的先验方式, 可选("major_copy_number", "parental_copy_number", "total_copy_number"), 当minor_cn与major_cn已知时使用"major_copy_number" 或 "parental_copy_number", 当minor_cn与major_cn未知且采用作者的建议将minor_cn设为0、major_cn设置为total_cn时, 使用"total_copy_number"; 
+##' @param Prior character 设置拷贝数的先验方式, 可选("major_copy_number", "parental_copy_number", "total_copy_number"), 当minor_cn与major_cn已知时使用"major_copy_number" 或 "parental_copy_number", 当minor_cn与major_cn未知且采用作者的建议将minor_cn设为0、major_cn设置为total_cn时, 使用"total_copy_number"; 默认"major_copy_number" 
 ###############' 在模糊程度(突变拷贝的不确定性)上: "parental" < "major" < "total" 即"parental"假设突变位点数量为[1 | mimor_cn(>0) | major_cn], "major"假设突变位点数量为[1 ~ major_cn]之间, "total"假设突变位点数量为[1 ~ total_cn]之间.
 PyClone.Run <- function(PyClone.Input, 
                         PyClone.Output.Dir = NULL, Config.Extras.File = NULL, 

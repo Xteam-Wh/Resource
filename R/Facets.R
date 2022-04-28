@@ -5,12 +5,12 @@
 
 
 ##' @description 通过R函数传参调用SNP Pileup统计各样本在SNP位点处的[参考、替代、错误、缺失]的read数
-##' @param Bam.Set character[] bam文件集合(建议对各文件提前进行coordinate排序处理)
-##' @param Common.Vcf character 常见的多态SNP的VCF文件(一个很好的来源是dbSNP的common_all.vcf.gz, 建议提前进行与bam文件进行一致的coordinate排序处理)
-##' @param Output.Prefix character 结果文件(csv格式)前缀[可携带路径]; 默认为当前工作目录下的"Facets.SNP-Pileup"
-##' @param Sort.Operation character 设置对Bam.Set中的文件以及Common.Vcf进行排序操作的方式, 可选("Auto", "Sort", "None"); 默认"Auto"即交由程序自行判断并排序
+##' @param BAM.Set character[] BAM文件集合(建议对各文件提前进行coordinate排序处理)
+##' @param Common.Vcf character 常见的多态SNP的VCF文件(一个很好的来源是dbSNP的common_all.vcf.gz, 建议提前进行与BAM文件进行一致的coordinate排序处理)
+##' @param Output.Prefix character 结果文件(csv格式)前缀[可携带路径]; 默认NULL, 即前工作目录下的"Facets.SNP-Pileup"
+##' @param Sort.Operation character 设置对BAM.Set中的文件以及Common.Vcf进行排序操作的方式, 可选("Auto", "Sort", "None"); 默认"Auto"
 ##' @param Compress.Output logical 设置是否对对结果文件进行压缩(csv.gz格式); 默认TRUE
-##' @param Show.Progress logical 设置是否显示SNP Pileup的进度条(需要先统计SNP数量，增加程序的运行时间); 默认为FALSE
+##' @param Show.Progress logical 设置是否显示SNP Pileup的进度条(需要先统计SNP数量，增加程序的运行时间); 默FALSE
 ##' @param Skip.Anomalous logical 设置是否跳过异常的异常读取对; 默认TRUE
 ##' @param Check.Overlaps logical 设置是否启用读取对重叠检测; 默认TRUE
 ##' @param Max.Depth numeric 设置最大深度, 即每个位点在各文件中允许的最大read数; 默认4000
@@ -18,10 +18,10 @@
 ##' @param Min.Map.Quality numeric 设置比对质量的最小阈值(针对MAPQ信息); 默认0
 ##' @param Min.Base.Quality numeric 设置序列质量的最小阈值(针对QUAL信息); 默认0
 ##' @param Min.Read.Counts numeric[] 设置输出位点在各样本中最小read数(设置单个值时将应用于所有样本); 默认0
-##' @param System.Samtools.Alias character Samtools软件在系统中的可执行命令名, 默认为"samtools"
-##' @param System.Bedtools.Alias character Bedtools软件在系统中的可执行命令名, 默认为"bedtools"
-##' @param System.Pileup.Alias character SNP Pileup软件在系统中的可执行命令名, 默认为"snp-pileup"
-Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf, 
+##' @param System.Samtools.Alias character Samtools软件在系统中的可执行命令名, 默认"samtools"
+##' @param System.Bedtools.Alias character Bedtools软件在系统中的可执行命令名, 默认"bedtools"
+##' @param System.Pileup.Alias character SNP Pileup软件在系统中的可执行命令名, 默认"snp-pileup"
+Facets.SNP.Pileup <- function(BAM.Set, Common.Vcf, 
                               Output.Prefix = NULL, Sort.Operation  = c("Auto", "Sort", "None"), 
                               Compress.Output = TRUE, Show.Progress = FALSE, Skip.Anomalous = TRUE, Check.Overlaps = TRUE, 
                               Max.Depth = 4000, Pseudo.Snps = 0, Min.Map.Quality = 0, Min.Base.Quality = 0, Min.Read.Counts = 0, 
@@ -33,12 +33,12 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
     if(nchar(Sys.which(System.Pileup.Alias)) > 0){
       
       # 文件参数的判断
-      Bam.Set <- as.character(Bam.Set)
+      BAM.Set <- as.character(BAM.Set)
       Common.Vcf <- as.character(Common.Vcf)
-      if(length(Bam.Set) >= 1){
-        Bam.Set <- normalizePath(Bam.Set, winslash = "/", mustWork = TRUE)
+      if(length(BAM.Set) >= 1){
+        BAM.Set <- normalizePath(BAM.Set, winslash = "/", mustWork = TRUE)
       }else{
-        stop("'Bam.Set'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
+        stop("'BAM.Set'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
       if(length(Common.Vcf) == 1){
         Common.Vcf <- normalizePath(Common.Vcf, winslash = "/", mustWork = TRUE)
@@ -115,16 +115,13 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
       
       # 配置Min.Read.Counts[--min-read-counts / -r]
       Min.Read.Counts <- as.numeric(Min.Read.Counts)
-      if(length(Min.Read.Counts) == 1){
-        
-      }
-      if(all(Min.Read.Counts >= 0) && all(Min.Read.Counts %% 1 == 0) && (length(Min.Read.Counts) == 1 || length(Min.Read.Counts) == length(Bam.Set))){
+      if(all(Min.Read.Counts >= 0) && all(Min.Read.Counts %% 1 == 0) && (length(Min.Read.Counts) == 1 || length(Min.Read.Counts) == length(BAM.Set))){
         if(length(Min.Read.Counts) == 1){
-          Min.Read.Counts <- rep(Min.Read.Counts, length(Bam.Set))
+          Min.Read.Counts <- rep(Min.Read.Counts, length(BAM.Set))
         }
         SNP.Pileup.Command <- sprintf("%s --min-read-counts %s", SNP.Pileup.Command, paste0(Min.Read.Counts, collapse = ","))
       }else{
-        stop("'Min.Read.Counts'应为单一大于等于0的整型numeric值或与'Bam.Set'等长的numeric向量 ...")
+        stop("'Min.Read.Counts'应为单一大于等于0的整型numeric值或与'BAM.Set'等长的numeric向量 ...")
       }
       
       # 配置Output.Prefix
@@ -139,10 +136,10 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
       }
       unlink((SNP.Pileup.Output <- sprintf("%s.%s", Output.Prefix, ifelse(Compress.Output, "csv.gz", "csv"))), force = TRUE)
       
-      # 对bam文件与vcf文件进行排序处理
+      # 对BAM文件与vcf文件进行排序处理
       Sort.Operation <- match.arg(Sort.Operation)
       if(Sort.Operation == "None"){# 不进行任何排序操作
-        Sorted.Bam.Set <- Bam.Set; Sorted.Common.Vcf <- Common.Vcf
+        Sorted.BAM.Set <- BAM.Set; Sorted.Common.Vcf <- Common.Vcf
       }else{
         System.Samtools.Alias <- as.character(System.Samtools.Alias)
         System.Bedtools.Alias <- as.character(System.Bedtools.Alias)
@@ -150,60 +147,60 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
           # 判断System.Samtools.Alias与System.Bedtools.Alias在系统中是否存在
           if(nchar(Sys.which(System.Samtools.Alias)) > 0){
             if(nchar(Sys.which(System.Bedtools.Alias)) > 0){
-              # 提取各Bam文件的参考序列信息
-              Bam.SeqName <- lapply(Bam.Set, function(Bam){
-                return(system(sprintf("\"%s\" view -H \"%s\" | grep ^@SQ | cut -f 2 | tr -d \"SN:\" | uniq", System.Samtools.Alias, Bam), intern = TRUE))
+              # 提取各BAM文件的参考序列信息
+              BAM.SeqName <- lapply(BAM.Set, function(BAM){
+                return(system(sprintf("\"%s\" view -H \"%s\" | grep ^@SQ | cut -f 2 | tr -d \"SN:\" | uniq", System.Samtools.Alias, BAM), intern = TRUE))
               })
-              # 识别Bam文件的公共参考序列信息
-              Bam.Common.SeqName <- Reduce(intersect, Bam.SeqName)
-              # 遍历各Bam文件的参考序列信息, 判断公共参考序列信息在各Bam文件中的顺序是否保持一致
-              for (SeqName in Bam.SeqName) {
-                if(any(intersect(SeqName, Bam.Common.SeqName) != Bam.Common.SeqName)){
-                  stop("Bam文件中共有的参考基因组比对信息(@SQ)顺序不一致 ...")
+              # 识别BAM文件的公共参考序列信息
+              BAM.Common.SeqName <- Reduce(intersect, BAM.SeqName)
+              # 遍历各BAM文件的参考序列信息, 判断公共参考序列信息在各BAM文件中的顺序是否保持一致
+              for (SeqName in BAM.SeqName) {
+                if(any(intersect(SeqName, BAM.Common.SeqName) != BAM.Common.SeqName)){
+                  stop("BAM文件中共有的参考基因组比对信息(@SQ)顺序不一致 ...")
                 }
               }
               # 提取Vcf文件中染色体的顺序信息
               Common.Vcf.SeqName <- system(sprintf("awk '{print $1}' \"%s\" | grep -v \"^#\" | uniq", Common.Vcf), intern = TRUE)
               if(! all(grepl("^chr([1-9]|1[0-9]|2[0-2]|[MXY]|MT)$", Common.Vcf.SeqName))){
-                Bam.Common.SeqName <- gsub(pattern = "^chr", "", Bam.Common.SeqName)
+                BAM.Common.SeqName <- gsub(pattern = "^chr", "", BAM.Common.SeqName)
               }
               # 对个文件进行排序操作
               switch(Sort.Operation, 
                      Auto = {# 自动判断并进行排序操作
-                       Sorted.Bam.Set <- sapply(Bam.Set, function(Bam){
-                         if(system(sprintf("\"%s\" view -H \"%s\" | grep ^@HD.*SO:coordinate.*$", System.Samtools.Alias, Bam), ignore.stdout = TRUE) == 0){
-                           Sorted.Bam <- Bam
+                       Sorted.BAM.Set <- sapply(BAM.Set, function(BAM){
+                         if(system(sprintf("\"%s\" view -H \"%s\" | grep ^@HD.*SO:coordinate.*$", System.Samtools.Alias, BAM), ignore.stdout = TRUE) == 0){
+                           Sorted.BAM <- BAM
                          }else{
-                           Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Bam), basename(Bam))
-                           Bam.Sort.Command <- sprintf("\"%s\" sort -o \"%s\" \"%s\"", System.Samtools.Alias, Sorted.Bam, Bam)
-                           System.Command.Run(System.Command = Bam.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", Bam, Sorted.Bam))
+                           Sorted.BAM <- sprintf("%s/(Coordinate.Sorted)%s", dirname(BAM), basename(BAM))
+                           BAM.Sort.Command <- sprintf("\"%s\" sort -o \"%s\" \"%s\"", System.Samtools.Alias, Sorted.BAM, BAM)
+                           System.Command.Run(System.Command = BAM.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", BAM, Sorted.BAM))
                          }
-                         return(Sorted.Bam) 
+                         return(Sorted.BAM) 
                        })
-                       if(all(intersect(Bam.Common.SeqName, Common.Vcf.SeqName) == intersect(Common.Vcf.SeqName, Bam.Common.SeqName))){
+                       if(all(intersect(BAM.Common.SeqName, Common.Vcf.SeqName) == intersect(Common.Vcf.SeqName, BAM.Common.SeqName))){
                          Sorted.Common.Vcf <- Common.Vcf
                        }else{
-                         Ref.Order <- c(Bam.Common.SeqName, setdiff(Common.Vcf.SeqName, Bam.Common.SeqName))
+                         Ref.Order <- c(BAM.Common.SeqName, setdiff(Common.Vcf.SeqName, BAM.Common.SeqName))
                          Ref.Order.File <- sprintf("%s/Ref.Order.txt", getwd())
                          write(Ref.Order, file = Ref.Order.File, sep = "\n")
                          on.exit({unlink(Ref.Order.File, force = TRUE)}, add = TRUE)
-                         Sorted.Common.Vcf <- sprintf("%s/(Sorted.Ref.Bam)%s", dirname(Common.Vcf), basename(Common.Vcf))
+                         Sorted.Common.Vcf <- sprintf("%s/(Sorted.Ref.BAM)%s", dirname(Common.Vcf), basename(Common.Vcf))
                          Vcf.Sort.Command <- sprintf("\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"", System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Sorted.Common.Vcf)
                          System.Command.Run(System.Command = Vcf.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", Common.Vcf, Sorted.Common.Vcf))
                        }
                      }, 
                      Sort = {# 直接进行排序操作
-                       Sorted.Bam.Set <- sapply(Bam.Set, function(Bam){
-                         Sorted.Bam <- sprintf("%s/(Coordinate.Sorted)%s", dirname(Bam), basename(Bam))
-                         Bam.Sort.Command <- sprintf("\"%s\" sort -o \"%s\" \"%s\"", System.Samtools.Alias, Sorted.Bam, Bam)
-                         System.Command.Run(System.Command = Bam.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", Bam, Sorted.Bam))
-                         return(Sorted.Bam) 
+                       Sorted.BAM.Set <- sapply(BAM.Set, function(BAM){
+                         Sorted.BAM <- sprintf("%s/(Coordinate.Sorted)%s", dirname(BAM), basename(BAM))
+                         BAM.Sort.Command <- sprintf("\"%s\" sort -o \"%s\" \"%s\"", System.Samtools.Alias, Sorted.BAM, BAM)
+                         System.Command.Run(System.Command = BAM.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", BAM, Sorted.BAM))
+                         return(Sorted.BAM) 
                        })
-                       Ref.Order <- c(Bam.Common.SeqName, setdiff(Common.Vcf.SeqName, Bam.Common.SeqName))
+                       Ref.Order <- c(BAM.Common.SeqName, setdiff(Common.Vcf.SeqName, BAM.Common.SeqName))
                        Ref.Order.File <- sprintf("%s/Ref.Order.txt", getwd())
                        write(Ref.Order, file = Ref.Order.File, sep = "\n")
                        on.exit({unlink(Ref.Order.File, force = TRUE)}, add = TRUE)
-                       Sorted.Common.Vcf <- sprintf("%s/(Sorted.Ref.Bam)%s", dirname(Common.Vcf), basename(Common.Vcf))
+                       Sorted.Common.Vcf <- sprintf("%s/(Sorted.Ref.BAM)%s", dirname(Common.Vcf), basename(Common.Vcf))
                        Vcf.Sort.Command <- sprintf("\"%s\" sort -header -faidx \"%s\" -i \"%s\" > \"%s\"", System.Bedtools.Alias, Ref.Order.File, Common.Vcf, Sorted.Common.Vcf)
                        System.Command.Run(System.Command = Vcf.Sort.Command, Success.Message = sprintf("'%s'排序后文件已输出至'%s' ...", Common.Vcf, Sorted.Common.Vcf))
                      })
@@ -219,7 +216,7 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
       }
       
       # 完成最终指令的拼接
-      SNP.Pileup.Command <- sprintf("%s \"%s\" \"%s.csv\" %s", SNP.Pileup.Command, Sorted.Common.Vcf, Output.Prefix, paste0(sprintf("\"%s\"", Sorted.Bam.Set), collapse = " "))
+      SNP.Pileup.Command <- sprintf("%s \"%s\" \"%s.csv\" %s", SNP.Pileup.Command, Sorted.Common.Vcf, Output.Prefix, paste0(sprintf("\"%s\"", Sorted.BAM.Set), collapse = " "))
       
       # 运行指令
       System.Command.Run(System.Command = SNP.Pileup.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", normalizePath(SNP.Pileup.Output, winslash = "/", mustWork = FALSE)))
@@ -238,8 +235,8 @@ Facets.SNP.Pileup <- function(Bam.Set, Common.Vcf,
 ##' @param Tumor.Normal.Matched logical 设置SNP.Pileup.Res中正常样本和肿瘤样本是否来自同一个体(影响杂合性SNP的判定); 默认TRUE
 ##' @param LogOR.Powerful logical 设置LogOR是否应在分段和聚类的过程中占据更多权重(增加检测杂合性SNP少的区域的等位基因失衡的能力); 默认TRUE
 ##' @param Show.Plot logica 设置是否绘制基因组图示(包括LogR、LogOR、CNV); 默认TRUE
-##' @param Genome.Assemblies character 设置基因组版本号, 可选c("hg18", "hg19", "hg38", "mm9", "mm10", "udef")
-##' @param Udef.GC.List list 设置基因组GC含量列表(当且仅当Genome.Assemblies为"udef"时生效), 其名称与它来自的序列(染色体)相对应, 数字向量给出了步长为100bp窗口大小为1000bp的GC含量
+##' @param Genome.Assemblies character 设置基因组版本号, 可选("hg18", "hg19", "hg38", "mm9", "mm10", "udef"); 默认"hg18"
+##' @param Udef.GC.List list 设置基因组GC含量列表(当且仅当Genome.Assemblies为"udef"时生效), 其名称与它来自的序列(染色体)相对应, 数字向量给出了步长为100bp窗口大小为1000bp的GC含量; 默认NULL
 ##' @param Err.Thresh numeric 设置SNP位点发生错误替代的read计数阈值, SNP Pileup结果中超过该值的记录将被去除; 默认Inf
 ##' @param Del.Thresh numeric 设置SNP位点发生缺失的read计数阈值, SNP Pileup结果中超过该值的记录将被去除; 默认Inf
 ##' @param Min.Depth numeric 设置最小深度, 数据预处理时总read计数小于该值的记录将被去除; 默认35

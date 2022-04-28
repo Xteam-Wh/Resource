@@ -8,21 +8,21 @@
 ##' @author Xteam.Wh
 ##' @param ... character[] 每个向量为一个集合
 ##' @param Sets.List list 集合列表, 每一个元素为一个向量
-##' @param Show.Set.Total logical 设置是否统计各集合的元素数量并显示在集合标签尾部
-##' @param Show.Percentage logical 设置是否计算各交集元素所占总元素数量的百分比并标注在交集标签下方
-##' @param Sets.Name character[] 设置每个集合名称的向量，用于设置集合标签
-##' @param Sets.Fill.Colour character[] 的每个集合填充颜色的向量
-##' @param Sets.Fill.Opacity numeric 设置集合的填充颜色的透明度
-##' @param Sets.Name.Size numeric 设置集合标签的尺寸
-##' @param Sets.Name.Colour numeric 设置集合标签的颜色
-##' @param Sets.Name.Opacity numeric 设置集合标签颜色的透明的
-##' @param Stroke.Size numeric 设置集合边缘线的尺寸
-##' @param Stroke.Colour numeric 设置合边缘线的颜色
-##' @param Stroke.Opacity numeric 设置合边缘线颜色的透明的
-##' @param Stroke.Linetype numeric | character 设置合边缘线的线型
-##' @param Intersection.Label.Size numeric 设置交集标签的尺寸
-##' @param Intersection.Label.Colour numeric 设置交集标签的颜色
-##' @param Intersection.Label.Opacity numeric 设置交集标签颜色的透明的
+##' @param Show.Set.Total logical 设置是否统计各集合的元素数量并显示在集合标签尾部; 默认FALSE
+##' @param Show.Percentage logical 设置是否计算各交集元素所占总元素数量的百分比并标注在交集标签下方; 默认FALSE
+##' @param Sets.Name character[] 设置每个集合名称的向量，用于设置集合标签; 默认NULL
+##' @param Sets.Fill.Colour character[] 设置每个集合填充颜色的向量; 默认NULL
+##' @param Sets.Fill.Opacity numeric 设置集合的填充颜色的透明度; 默认0.5
+##' @param Sets.Name.Size numeric 设置集合标签的尺寸; 默认5
+##' @param Sets.Name.Colour numeric 设置集合标签的颜色; 默认"DarkSlateGray"
+##' @param Sets.Name.Opacity numeric 设置集合标签颜色的透明的; 默认1
+##' @param Stroke.Size numeric 设置集合边缘线的尺寸; 默认1
+##' @param Stroke.Colour numeric 设置集合边缘线的颜色; 默认NULL
+##' @param Stroke.Opacity numeric 设置集合边缘线颜色的透明的; 默认1
+##' @param Stroke.Linetype numeric | character 设置集合边缘线的线型; 默认"solid"
+##' @param Intersection.Label.Size numeric 设置交集标签的尺寸; 默认3
+##' @param Intersection.Label.Colour numeric 设置交集标签的颜色; 默认"DarkSlateGray"
+##' @param Intersection.Label.Opacity numeric 设置交集标签颜色的透明的; 默认1
 ##' @return 返回venn图的绘图信息
 Venn.View <- function(..., Sets.List = NULL, 
                       Show.Set.Total = FALSE, Show.Percentage = FALSE, 
@@ -175,21 +175,21 @@ Venn.View <- function(..., Sets.List = NULL,
 ############' $Feature.Name character 特征名，将作为对应的纵坐标title属性
 ############' $Point.Data data.frame 包含必要列[SeqName(序列名), Position(所在序列的位点), Feature.Value(特征信号值)], 可选列[Feature.Type(特征信号所属类别)]
 ############' $Segment.Data data.frame 包含必要列[SeqName(序列名), Position.Start(所在序列的起始位点), Position.End(所在序列的结束位点), Feature.Value(特征信号值)], 可选列[Feature.Type(特征信号所属类别)]
-############' $Point.Size numeric 设置点的尺寸
-############' $Point.Shape numeric | character 设置点型
-############' $Point.Alpha numeric 设置点的透明度
-############' $Point.Colour character 设置点的颜色
-############' $Point.Fill character 设置点的填充色
-############' $Point.Stroke numeric 设置点的边缘线尺寸
-############' $Segment.Size numeric 设置线段的尺寸
-############' $Segment.Alpha numeric 设置线段的透明度
-############' $Segment.Colour character 设置线段的颜色
-############' $Segment.LineType numeric | character 设置线段的线型
-############' $Colour.Map characte[] 设置颜色映射集合, 与"Feature.Type"包含的元素种类相对应
+############' $Point.Size numeric 设置点的尺寸; 默认1
+############' $Point.Shape numeric | character 设置点型; 默认20
+############' $Point.Alpha numeric 设置点的透明度; 默认0.66
+############' $Point.Colour character 设置点的颜色; 默认"DarkSlateGray"
+############' $Point.Fill character 设置点的填充色; 默认"DarkSlateGray"
+############' $Point.Stroke numeric 设置点的边缘线尺寸; 默认1
+############' $Segment.Size numeric 设置线段的尺寸; 默认1
+############' $Segment.Alpha numeric 设置线段的透明度; 默认0.66
+############' $Segment.Colour character 设置线段的颜色; 默认如果包含Point.Data设置为"OrangeRed", 不包含Point.Data设置"DarkSlateGray", 
+############' $Segment.LineType numeric | character 设置线段的线型; 默认"solid"
+############' $Colour.Map characte[] 设置颜色映射集合, 与"Feature.Type"包含的元素种类相对应; 默认NULL
 ##' @param Feature.List.Data list 特征list数据集合，每个特征信号对应一个list, 每个list包含的元素与可变参数(...)传入的每个list一致
 ##' @param Auto.Marge logical 设置是否自动对各图表进行合并
-##' @param SeqName.Ratio numeric 设置组合图标中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE时生效
-##' @param Feature.Name.Aligned logical 设置各图表纵坐标title是否保持对齐, 当且仅当Auto.Marge = TRUE时生效
+##' @param SeqName.Ratio numeric 设置组合图标中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE时生效; 默认0.125
+##' @param Feature.Name.Aligned logical 设置各图表纵坐标title是否保持对齐, 当且仅当Auto.Marge = TRUE时生效; 默认FALSE
 ##' @param Genome.Assemblies character 设置基因组版本号, 可选unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))
 ##' @return 若Auto.Marge = TRUE, 则返回组合后的绘图信息; 若Auto.Marge = FALSE, 则返每个特征信号的绘图信息以及上下基因组条段绘图信息
 Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqName.Ratio = 0.125,  Feature.Name.Aligned = FALSE, 
@@ -329,7 +329,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
           Feature.Plot <- Feature.Plot + geom_segment(data = Segment.Data, aes(x = Position.Start, y = Feature.Value, xend = Position.End, yend = Feature.Value, colour = Feature.Type), size = Feature.Data$Segment.Size, alpha = Feature.Data$Segment.Alpha, linetype = Feature.Data$Segment.LineType)
         }
       }
-      if(!is.null(Feature.Data$Colour.Map) && !(is.null(Point.Data$Feature.Type) && is.null(Segment.Data$Feature.Type))){
+      if(! is.null(Feature.Data$Colour.Map) && ! (is.null(Point.Data$Feature.Type) && is.null(Segment.Data$Feature.Type))){
         if("character" %in% class(Feature.Data$Colour.Map) && length(Feature.Data$Colour.Map) == length(unique(c(Point.Data$Feature.Type, Segment.Data$Feature.Type)))){
           Feature.Plot <- Feature.Plot + scale_colour_manual(values = Feature.Data$Colour.Map)
         }else{
