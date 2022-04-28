@@ -10,7 +10,7 @@
 
 ##' @description 通过R函数传参调用Gatk GetSampleName获取SAM/BAM/CRAM的样本名[文件头标签@RG的SM值]
 ##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
-##' @param AM.Input character 要读取的SAM/BAM/CRIM文件
+##' @param AM.Input character 要读取的SAM/BAM/CRAM文件
 ##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认为"java"
 ##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等
 ##' @return character SAM/BAM/CRIM文件记录的样本名
