@@ -171,7 +171,7 @@ Venn.View <- function(..., Sets.List = NULL,
 
 ##' @description 对基因组上的信号特征(点和线段)进行可视化(至少可视化一条基因组版本包含的序列)
 ##' @author Xteam.Wh
-##' @param ... list 每个list包含以下元素(其中至少要包含Point.Data与Segment.Data其中的一项, 否则将被从队列中移除)：
+##' @param ... list 每个list包含以下元素(其中至少要包含Point.Data与Segment.Data其中的一项, 否则将被从队列中移除: 
 ############' $Feature.Name character 特征名，将作为对应的纵坐标title属性
 ############' $Point.Data data.frame 包含必要列[SeqName(序列名), Position(所在序列的位点), Feature.Value(特征信号值)], 可选列[Feature.Type(特征信号所属类别)]
 ############' $Segment.Data data.frame 包含必要列[SeqName(序列名), Position.Start(所在序列的起始位点), Position.End(所在序列的结束位点), Feature.Value(特征信号值)], 可选列[Feature.Type(特征信号所属类别)]
@@ -186,13 +186,13 @@ Venn.View <- function(..., Sets.List = NULL,
 ############' $Segment.Colour character 设置线段的颜色; 默认如果包含Point.Data设置为"OrangeRed", 不包含Point.Data设置"DarkSlateGray", 
 ############' $Segment.LineType numeric | character 设置线段的线型; 默认"solid"
 ############' $Colour.Map characte[] 设置颜色映射集合, 与"Feature.Type"包含的元素种类相对应; 默认NULL
-##' @param Feature.List.Data list 特征list数据集合，每个特征信号对应一个list, 每个list包含的元素与可变参数(...)传入的每个list一致
+##' @param Feature.Data.List list 特征list数据集合，每个特征信号对应一个list, 每个list包含的元素与可变参数(...)传入的每个list一致
 ##' @param Auto.Marge logical 设置是否自动对各图表进行合并
 ##' @param SeqName.Ratio numeric 设置组合图标中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE时生效; 默认0.125
 ##' @param Feature.Name.Aligned logical 设置各图表纵坐标title是否保持对齐, 当且仅当Auto.Marge = TRUE时生效; 默认FALSE
 ##' @param Genome.Assemblies character 设置基因组版本号, 可选unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))
 ##' @return 若Auto.Marge = TRUE, 则返回组合后的绘图信息; 若Auto.Marge = FALSE, 则返每个特征信号的绘图信息以及上下基因组条段绘图信息
-Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqName.Ratio = 0.125,  Feature.Name.Aligned = FALSE, 
+Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqName.Ratio = 0.125,  Feature.Name.Aligned = FALSE, 
                         Genome.Assemblies = unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))){
   
   
@@ -200,7 +200,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
   ## 0.特征信号数据的整合
   ############
   library(ggplot2)
-  Feature.List.Data <- c(list(...), as.list(Feature.List.Data))
+  Feature.Data.List <- c(list(...), as.list(Feature.Data.List))
   
   ############
   ## 1.导入相应的基因组版本相关信息
@@ -216,7 +216,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
   ## 3.提取绘图数据所包含的基因组序列， 并判断这些序列是否存在与所选取的基因组版本中
   ############
   # 提取特征信号数据中包含的基因组序列名称
-  Common.SeqName <- unique(unlist(lapply(Feature.List.Data, function(Feature.Data){return(unique(c(as.list(Feature.Data)$Point.Data$SeqName, as.list(Feature.Data)$Segment.Data$SeqName)))})))
+  Common.SeqName <- unique(unlist(lapply(Feature.Data.List, function(Feature.Data){return(unique(c(as.list(Feature.Data)$Point.Data$SeqName, as.list(Feature.Data)$Segment.Data$SeqName)))})))
   if(!is.null(Common.SeqName) && all(Common.SeqName %in% Genome.Seqinfo.SeqName)){
     
     ############
@@ -230,7 +230,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
     ############
     ## 5.格式化绘图数据基因组位置信息, 以及美学映射信息
     ############
-    Feature.List.Data  <- lapply(Feature.List.Data, function(Feature.Data){
+    Feature.Data.List  <- lapply(Feature.Data.List, function(Feature.Data){
       Feature.Data <- as.list(Feature.Data)
       if((is.null(Feature.Data$Point.Data) || nrow(as.data.frame(Feature.Data$Point.Data)) == 0) && (is.null(Feature.Data$Segment.Data) || nrow(as.data.frame(Feature.Data$Segment.Data)) == 0)){
         stop("当前数据不存在'Point.Data'或'Segment.Data', 不符合要求, 请将其从队列中移 ...", call. = FALSE)
@@ -300,7 +300,7 @@ Genome.View <- function(..., Feature.List.Data = NULL, Auto.Marge = TRUE, SeqNam
     ############
     ## 7.绘制各特征信号(点、线段)
     ############
-    Feature.Plots <- lapply(Feature.List.Data[!is.na(Feature.List.Data)], function(Feature.Data){
+    Feature.Plots <- lapply(Feature.Data.List[!is.na(Feature.Data.List)], function(Feature.Data){
       Point.Data <- Feature.Data$Point.Data
       Segment.Data <- Feature.Data$Segment.Data
       Common.SeqName.Info.Num <- nrow(Common.SeqName.Info)

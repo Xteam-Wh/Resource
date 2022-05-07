@@ -4,10 +4,10 @@
 ####################################################################
 
 ##' @description 从高通量测序数据中计算LogR值与BAF值
-##' @param Loci.Prefix character SNP位点坐标数据文件的前缀[可携带路径], 每条染色体对应一个坐标文件, 文件的全路径格式为“[Loci.Prefix][Chromosomes][.txt]”
-############' 每一个SNP位点坐标数据文件要求是没有列名并以制表符分隔的文件, 包含[Chromosome、Position]两列信息
-##' @param Alleles.Prefix character SNP位点的等位基因数据文件的前缀[可携带路径], 每条染色体对应一个坐标文件, 文件的全路径格式为“[Alleles.Prefix][Chromosomes][.txt]”
-############'  每一个SNP位点的等位基因数据文件要求是有列名并以制表符分隔的文件, 包含[Position、Allele1、Allele2]三列信息, 其中[Allele1、Allele2]分别用数值1、2、3、4表示A、C、G、T四种核苷酸
+##' @param Loci.Prefix character SNP位点坐标数据文件的前缀[可携带路径], 每条染色体对应一个坐标文件, 文件的全路径格式为“[Loci.Prefix][chr][Chromosome][.txt]”
+############' 每一个SNP位点坐标数据文件要求是没有列名并以制表符分隔的文件, 包含[Chromosome、Position]两列信息, 其中"Chromosome"信息应与BAM文件或CRAM文件中使用得格式统一, 即是否包含前缀"chr"
+##' @param Alleles.Prefix character SNP位点的等位基因数据文件的前缀[可携带路径], 每条染色体对应一个坐标文件, 文件的全路径格式为“[Alleles.Prefix][Chromosome][.txt]”
+############'  每一个SNP位点的等位基因数据文件要求是有列名并以制表符分隔的文件, 包含[Position、Ref.Allele、Alt.Allele]三列信息, 其中[Position]信息对应的列名必须为"position", [Ref.Allele、Alt.Allele]分别用数值1、2、3、4表示A、C、G、T四种核苷酸
 ##' @param HTS.Tumor.File character 肿瘤样本的高通量测序数据, 要求是BAM文件或CRAM文件格式
 ##' @param HTS.Normal.File character 正常样本的高通量测序数据, 要求是BAM文件或CRAM文件格式
 ##' @param Genome.Refence character 参考基因组文件(FASTA格式), 当输入的通量测序数据类型为CRAM格式时, 必须设置该参数; 默认NULL
@@ -98,8 +98,8 @@ ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix,
       }
       
       Chromosomes <- unique(as.character(Chromosomes))
-      if(length(Chromosomes) == 0 || ! all(Chromosomes %in% c(1:22, "X"))){
-        stop(sprintf("'Chromosomes'应为至少包含一个元素的character向量, 且全部元素应属于(%s) ...", paste0(c(1:22, "X"), collapse = ",")))
+      if(length(Chromosomes) == 0 || ! all(Chromosomes %in% c(1:22, "X", "Y"))){
+        stop(sprintf("'Chromosomes'应为至少包含一个元素的character向量, 且全部元素应属于(%s) ...", paste0(c(1:22, "X", "Y"), collapse = ",")))
       }
       
       ############
@@ -117,20 +117,27 @@ ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix,
                        normalBAF_file = sprintf("%s/%s.BAF", OutPut.Dir, basename(HTS.Normal.File)),
                        tumourLogR_file = sprintf("%s/%s.LogR", OutPut.Dir, basename(HTS.Tumor.File)),
                        normalLogR_file = sprintf("%s/%s.LogR", OutPut.Dir, basename(HTS.Normal.File)),
-                       nthreads = N.Threads, minCounts = Min.Depth, min_map_qual = Min.Map.Quality, min_base_qual = Min.Base.Quality)
+                       chrom_names = Chromosomes, nthreads = N.Threads, minCounts = Min.Depth, min_map_qual = Min.Map.Quality, min_base_qual = Min.Base.Quality)
       
       
       ############
-      ## 3.删除过程中产生的临时文件
+      ## 3.删除过程中产生的临时文件(等位基因计数文件)
       ############
       Temp.File.Regular <- sprintf("(%s|%s)_alleleFrequencies_chr(%s)[.]txt", basename(HTS.Tumor.File), basename(HTS.Normal.File), paste0(c(1:22, "X"), collapse = "|"))
       unlink(list.files(pattern = Temp.File.Regular, full.names = T), force = TRUE)
+      
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Allelecounter.Alias))
     }
   }else{
     stop("'System.Allelecounter.Alias'应为单一的character值 ...")
   }
-  
+}
+
+
+ASCAT.Extract.LogR.BAF <- function(Tumor.BAF.File, Tumor.LogR.File, 
+                                   Normal.BAF.File = NULL, Normal.LogR.File = NULL, 
+                                   GC.Model.File = NULL, Replication.Timing.File = NULL, 
+                                   Gamma = 1, Gender = c("XX", "XY"), Genome.Version = c("hg19","hg38")){
   
 }
