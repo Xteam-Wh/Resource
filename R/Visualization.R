@@ -250,7 +250,7 @@ Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqNam
             if(is.null(Feature.Data$Point.Fill)){ Feature.Data$Point.Fill = Feature.Data$Point.Colour }
             Feature.Data$Point.Data$Position  <- Feature.Data$Point.Data$Position + Common.SeqName.Accumulate.Before.Map[Feature.Data$Point.Data$SeqName]
           }else{
-            stop("'Point.Data'必须存在[SeqName(序列名)、Position(所在序列的位点)、Feature.Value(特征信号值)]三项信息, 可选信息[Feature.Type(特征信号所属类别)] ...")
+            stop("'Point.Data'应至少包含[SeqName(序列名)、Position(所在序列的位点)、Feature.Value(特征信号值)]三列信息, 可选信息[Feature.Type(特征信号所属类别)] ...")
           }
         }
         if(! is.null(Feature.Data$Segment.Data)){
@@ -263,7 +263,7 @@ Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqNam
             Feature.Data$Segment.Data$Position.End  <- Feature.Data$Segment.Data$Position.End + Common.SeqName.Accumulate.Before.Map[Feature.Data$Segment.Data$SeqName]
             Feature.Data$Segment.Data$Position.Start  <- Feature.Data$Segment.Data$Position.Start + Common.SeqName.Accumulate.Before.Map[Feature.Data$Segment.Data$SeqName]
           }else{
-            stop("'Segment.Data'必须存在[SeqName(序列名), Position.Start(所在序列的起始位点), Position.End(所在序列的结束位点), Feature.Value(特征信号值)]四项信息, 可选信息[Feature.Type(特征信号所属类别)] ...")
+            stop("'Segment.Data'应至少包含[SeqName(序列名), Position.Start(所在序列的起始位点), Position.End(所在序列的结束位点), Feature.Value(特征信号值)]四列信息, 可选信息[Feature.Type(特征信号所属类别)] ...")
           }
         }
         return(Feature.Data)

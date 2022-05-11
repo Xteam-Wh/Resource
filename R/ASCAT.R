@@ -18,14 +18,14 @@
 ##' @param Min.Map.Quality numeric 设置比对质量的最小阈值(针对MAPQ信息); 默认35
 ##' @param Min.Base.Quality numeric 设置序列质量的最小阈值(针对QUAL信息); 默认20
 ##' @param Chromosomes character[] 设置要使用的染色体; 默认c(1:22, "X")
-##' @param Gender character 设置样本性别, 用两条性染色体表示, 可选值为("XX", "XY"); 默认"XX"
+##' @param Sample.Gender character 设置样本性别, 用两条性染色体表示, 可选值为("XX", "XY"); 默认"XX"
 ##' @param Genome.Version character 设置基因组版本号, 可选值为("hg19", "hg38"); 默认"hg19"
 ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix, 
                                    HTS.Tumor.File, HTS.Normal.File, 
                                    Genome.Refence = NULL, OutPut.Dir = NULL, 
                                    System.Allelecounter.Alias = "alleleCounter",
                                    N.Threads = 1, Min.Depth = 10, Min.Map.Quality = 35, Min.Base.Quality = 20, 
-                                   Chromosomes = c(1:22, "X"), Gender = c("XX", "XY"), Genome.Version = c("hg19","hg38")){
+                                   Chromosomes = c(1:22, "X"), Sample.Gender = c("XX", "XY"), Genome.Version = c("hg19","hg38")){
   library(ASCAT)
   System.Allelecounter.Alias <- as.character(System.Allelecounter.Alias)
   if(length(System.Allelecounter.Alias) == 1){
@@ -46,32 +46,32 @@ ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix,
       }
       
       HTS.Tumor.File <- as.character(HTS.Tumor.File)
-      if(length(HTS.Tumor.File) == 1){
+      if(length(HTS.Tumor.File) == 1 && file.exists(HTS.Tumor.File)){
         HTS.Tumor.File <- normalizePath(HTS.Tumor.File, winslash = "/", mustWork = TRUE)
       }else{
         stop("'HTS.Tumor.File'应为单一且存在的文件路径 ...")
       }
       
       HTS.Normal.File <- as.character(HTS.Normal.File)
-      if(length(HTS.Normal.File) == 1){
+      if(length(HTS.Normal.File) == 1 && file.exists(HTS.Normal.File)){
         HTS.Normal.File <- normalizePath(HTS.Normal.File, winslash = "/", mustWork = TRUE)
       }else{
-        stop("'HTS.Tumor.File'应为单一且存在的文件路径 ...")
+        stop("'HTS.Normal.File'应为单一且存在的文件路径 ...")
       }
       
       Genome.Refence <- as.character(Genome.Refence)
-      if(length(HTS.Tumor.File) == 0){
+      if(length(Genome.Refence) == 0){
         Genome.Refence <- NA
-      }else if(length(HTS.Tumor.File) == 1){
-        HTS.Tumor.File <- normalizePath(HTS.Tumor.File, winslash = "/", mustWork = TRUE)
+      }else if(length(Genome.Refence) == 1 && file.exists(Genome.Refence)){
+        Genome.Refence <- normalizePath(Genome.Refence, winslash = "/", mustWork = TRUE)
       }else{
-        stop("'HTS.Tumor.File'应为NULL或单一且存在的文件路径 ...")
+        stop("'Genome.Refence'应为NULL或单一且存在的文件路径 ...")
       }
       
       OutPut.Dir <- as.character(OutPut.Dir)
       if(length(OutPut.Dir) == 0){
         OutPut.Dir <- getwd()
-      }else if(length(OutPut.Dir) == 1){
+      }else if(length(OutPut.Dir) == 1 && dir.exists(OutPut.Dir)){
         OutPut.Dir <- normalizePath(OutPut.Dir, winslash = "/", mustWork = TRUE)
       }else{
         stop("'OutPut.Dir'应为NULL或单一且存在的目录路径 ...")
@@ -111,13 +111,13 @@ ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix,
                        normalseqfile = HTS.Normal.File,
                        tumourname = basename(HTS.Tumor.File), 
                        normalname = basename(HTS.Normal.File),
-                       allelecounter_exe = System.Allelecounter.Alias,
-                       gender = match.arg(Gender), genomeVersion = match.arg(Genome.Version), 
+                       allelecounter_exe = System.Allelecounter.Alias, 
                        tumourBAF_file = sprintf("%s/%s.BAF", OutPut.Dir, basename(HTS.Tumor.File)),
                        normalBAF_file = sprintf("%s/%s.BAF", OutPut.Dir, basename(HTS.Normal.File)),
                        tumourLogR_file = sprintf("%s/%s.LogR", OutPut.Dir, basename(HTS.Tumor.File)),
                        normalLogR_file = sprintf("%s/%s.LogR", OutPut.Dir, basename(HTS.Normal.File)),
-                       chrom_names = Chromosomes, nthreads = N.Threads, minCounts = Min.Depth, min_map_qual = Min.Map.Quality, min_base_qual = Min.Base.Quality)
+                       chrom_names = Chromosomes, gender = match.arg(Sample.Gender),genomeVersion = match.arg(Genome.Version),
+                       nthreads = N.Threads, minCounts = Min.Depth, min_map_qual = Min.Map.Quality, min_base_qual = Min.Base.Quality)
       
       
       ############
@@ -135,9 +135,153 @@ ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix,
 }
 
 
-ASCAT.Extract.LogR.BAF <- function(Tumor.BAF.File, Tumor.LogR.File, 
+ASCAT.CNV.Calling <- function(Tumor.BAF.File, Tumor.LogR.File, 
                                    Normal.BAF.File = NULL, Normal.LogR.File = NULL, 
-                                   GC.Model.File = NULL, Replication.Timing.File = NULL, 
-                                   Gamma = 1, Gender = c("XX", "XY"), Genome.Version = c("hg19","hg38")){
+                                   GC.Content.File = NULL, Replication.Timing.File = NULL, 
+                                   Sample.Genders = NULL, Genome.Version = c("hg19","hg38"), Min.Ploidy = 1.5, Max.Ploidy = 5.5, Technology.Parameter.Gamma = 1, 
+                                   Array.Platform = c("Affy10k", "AffySNP6", "Affy100k", "Custom10k", "Illumina1M", "IlluminaASA", "HumanCore12", "Illumina109k", "Illumina610k", "Illumina660k", "Illumina700k", "Illumina2.5M", "Affy250k_sty", "Affy250k_nsp", "AffyOncoScan", "IlluminaGSAv3", "IlluminaOmni5", "AffyCytoScanHD", "IlluminaCytoSNP", "HumanCNV370quad", "HumanCoreExome24", "HumanOmniExpress12", "IlluminaCytoSNP850k", "IlluminaOmniExpressExome")){
+  library(ASCAT)
+  ############
+  ## 1.参数判断与预处理
+  ############
+  Tumor.BAF.File <- as.character(Tumor.BAF.File)
+  if(length(Tumor.BAF.File) == 1 && file.exists(Tumor.BAF.File)){
+    Tumor.BAF.File <- normalizePath(Tumor.BAF.File, winslash = "/", mustWork = TRUE)
+    Tumor.BAF.Sample.Num <- length(unlist(strsplit(trimws(readLines(con = Tumor.BAF.File, n = 1)), "\t"))) - 2
+  }else{
+    stop("'Tumor.BAF.File'应为单一且存在的文件路径 ...")
+  }
   
+  Tumor.LogR.File<- as.character(Tumor.LogR.File)
+  if(length(Tumor.LogR.File) == 1 && file.exists(Tumor.LogR.File)){
+    Tumor.LogR.File <- normalizePath(Tumor.LogR.File, winslash = "/", mustWork = TRUE)
+    Tumor.LogR.Sample.Num <- length(unlist(strsplit(trimws(readLines(con = Tumor.LogR.File, n = 1)), "\t"))) - 2
+  }else{
+    stop("'Tumor.LogR.File'应为单一且存在的文件路径 ...")
+  }
+  
+  if(Tumor.BAF.Sample.Num == Tumor.LogR.Sample.Num){
+    Sample.Num <- Tumor.BAF.Sample.Num <- Tumor.LogR.Sample.Num
+  }else{
+    stop("'Tumor.BAF.File'与'Tumor.LogR.File'应包含的同等的样本数量 ...")
+  }
+  
+  Normal.BAF.File <- as.character(Normal.BAF.File)
+  if(length(Normal.BAF.File) == 0){
+    Normal.BAF.File <- NULL
+  }else if(length(Normal.BAF.File) == 1 && file.exists(Normal.BAF.File)){
+    Normal.BAF.File <- normalizePath(Normal.BAF.File, winslash = "/", mustWork = TRUE)
+    Normal.BAF.Sample.Num <- length(unlist(strsplit(trimws(readLines(con = Normal.BAF.File, n = 1)), "\t"))) - 2
+    if(Normal.BAF.Sample.Num != Sample.Num){
+      stop("'Normal.BAF.File'应与'Tumor.BAF.File'以及'Tumor.LogR.File'包含的同等的样本数量 ...")
+    }
+  }else{
+    stop("'Normal.BAF.File'应为NULL或单一且存在的文件路径 ...")
+  }
+  
+  Normal.LogR.File <- as.character(Normal.LogR.File)
+  if(length(Normal.LogR.File) == 0){
+    Normal.LogR.File <- NULL
+  }else if(length(Normal.LogR.File) == 1 && file.exists(Normal.LogR.File)){
+    Normal.LogR.File <- normalizePath(Normal.LogR.File, winslash = "/", mustWork = TRUE)
+    Normal.LogR.Sample.Num <- length(unlist(strsplit(trimws(readLines(con = Normal.LogR.File, n = 1)), "\t"))) - 2
+    if(Normal.LogR.Sample.Num != Sample.Num){
+      stop("'Normal.LogR.File'应与'Tumor.BAF.File'以及'Tumor.LogR.File'包含的同等的样本数量 ...")
+    }
+  }else{
+    stop("'Normal.LogR.File'应为NULL或单一且存在的文件路径 ...")
+  }
+  
+  GC.Content.File <- as.character(GC.Content.File)
+  if(length(GC.Content.File) == 0){
+    GC.Content.File <- NULL
+  }else if(length(GC.Content.File) == 1 && file.exists(GC.Content.File)){
+    GC.Content.File <- normalizePath(GC.Content.File, winslash = "/", mustWork = TRUE)
+  }else{
+    stop("'GC.Content.File'应为NULL或单一且存在的文件路径 ...")
+  }
+  
+  Replication.Timing.File <- as.character(Replication.Timing.File)
+  if(length(Replication.Timing.File) == 0){
+    Replication.Timing.File <- NULL
+  }else if(length(Replication.Timing.File) == 1 && file.exists(Replication.Timing.File)){
+    Replication.Timing.File <- normalizePath(Replication.Timing.File, winslash = "/", mustWork = TRUE)
+  }else{
+    stop("'Replication.Timing.File'应为NULL或单一且存在的文件路径 ...")
+  }
+  
+  Sample.Genders <- as.character(Sample.Genders)
+  if(length(Sample.Genders) == 0){
+    Sample.Genders <- NULL
+  }else if(length(Sample.Genders) != Sample.Num || ! all(Sample.Genders %in% c("XX", "XY"))){
+    stop(sprintf("'Sample.Genders'应为null或与样本个数等长的character向量, 且全部元素应属于(%s) ...", paste0(c("XX", "XY"), collapse = ",")))
+  }
+    
+  Min.Ploidy <- as.numeric(Min.Ploidy)
+  if(length(Min.Ploidy) != 1){
+    stop("'Min.Ploidy'应为单一numeric值 ...")
+  }
+  
+  Max.Ploidy <- as.numeric(Max.Ploidy)
+  if(length(Max.Ploidy) != 1){
+    stop("'Max.Ploidy'应为单一numeric值 ...")
+  }
+  
+  Technology.Parameter.Gamma <- as.numeric(Technology.Parameter.Gamma)
+  if(length(Technology.Parameter.Gamma) != 1 || Technology.Parameter.Gamma <= 0 || Technology.Parameter.Gamma > 1){
+    stop("'Technology.Parameter.Gamma'应为介于(0,1]之间的单一numeric值 ...")
+  }
+  
+  ############
+  ## 2.ASCAT分析
+  ############
+  # 载入数据
+  ascat.bc = ascat.loadData(gender = Sample.Genders, 
+                            genomeVersion = match.arg(Genome.Version), 
+                            Tumor_BAF_file = Tumor.BAF.File, Tumor_LogR_file = Tumor.LogR.File, 
+                            Germline_BAF_file = Normal.BAF.File, Germline_LogR_file = Normal.LogR.File)
+  
+  # 矫正校正肿瘤样本的LogR值
+  if(! is.null(GC.Content.File)){
+    ascat.bc = ascat.correctLogR(ascat.bc, GCcontentfile = GC.Content.File, replictimingfile = Replication.Timing.File)
+  }
+  # 若缺少配对的正常样本数据, 需要依据SNP阵列平台预测正常样本的基因型数据
+  if(is.null(Normal.BAF.File) || is.null(Normal.LogR.File)){
+    # 预测正常样本的因型
+    ascat.gg = ascat.predictGermlineGenotypes(ascat.bc, platform = match.arg(Array.Platform))
+  }else{
+    ascat.gg = NULL
+  }
+  # 片段分割
+  ascat.bc = ascat.aspcf(ascat.bc, ascat.gg = ascat.gg)
+  # 估计肿瘤纯度、倍性、等位特异拷贝数等信息
+  ascat.output = ascat.runAscat(ascat.bc, gamma = Technology.Parameter.Gamma, pdfPlot = TRUE, min_ploidy = Min.Ploidy, max_ploidy = Max.Ploidy)
+  
+  ############
+  ## 3.结果封装
+  ############
+  Analysis.Samples <- ascat.bc$samples
+  ASCAT.Result <- lapply(Analysis.Samples, function(Analysis.Sample){
+    if(Analysis.Sample %in% ascat.output$failedarrays){
+      return(
+        list(Purity = NULL, 
+             Ploidy = NULL, 
+             Point.Data = data.frame(SeqName = NULL, Position = NULL, BAF = NULL, LogR = NULL), 
+             Segment.Data = data.frame(SeqName = NULL, Position.Start = NULL, Position.End = NULL, CN.Major = NULL, CN.Minor = NULL)
+             )
+      )
+    }else{
+      Analysis.Sample.Segment.Data <- ascat.output$segments[ascat.output$segments$sample %in% Analysis.Sample, ]
+      return(
+        list(
+          Purity = ascat.output$purity[Analysis.Sample], 
+          Ploidy = ascat.output$ploidy[Analysis.Sample], 
+          Point.Data = data.frame(SeqName = ascat.bc$SNPpos$chrs, Position = ascat.bc$SNPpos$pos, BAF = ascat.bc$Tumor_BAF[[Analysis.Sample]], LogR = ascat.bc$Tumor_LogR[[Analysis.Sample]]), 
+          Segment.Data = data.frame(SeqName = Analysis.Sample.Segment.Data$chr, Position.Start = Analysis.Sample.Segment.Data$startpos, Position.End = Analysis.Sample.Segment.Data$endpos, CN.Major = Analysis.Sample.Segment.Data$nMajor, CN.Minor = Analysis.Sample.Segment.Data$nMinor)
+        )
+      )
+    }
+  })
+  names(ASCAT.Result) <- Analysis.Samples
+  return(ASCAT.Result)
 }

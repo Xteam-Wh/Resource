@@ -25,12 +25,10 @@ Annovar.Download <- function(Database,
       if(length(Annovar.Dir) == 0){
         # 若Annovar.Dir未配置, 则将其设置为当前工作目录
         Annovar.Dir <- getwd()
+      }else if(length(Annovar.Dir) == 1 && dir.exists(Annovar.Dir)){
+        Annovar.Dir <- normalizePath(Annovar.Dir, winslash = "/", mustWork = TRUE)
       }else{
-        if(length(Annovar.Dir) == 1){
-          Annovar.Dir <- normalizePath(Annovar.Dir, winslash = "/", mustWork = TRUE)
-        }else{
-          stop("'Annovar.Dir'应为NULL或单一且存在的目录路径 ...")
-        }
+        stop("'Annovar.Dir'应为NULL或单一且存在的目录路径 ...")
       }
       Annovar.Command <- sprintf("\"%s\" \"%s/annotate_variation.pl\"", System.Perl.Alias, Annovar.Dir)
       
@@ -46,15 +44,12 @@ Annovar.Download <- function(Database,
       Database.Dir <- as.character(Database.Dir)
       if(length(Database.Dir) == 0){
         Database.Dir <- sprintf("%s/humandb", Annovar.Dir)
+        dir.create(Database.Dir, recursive = TRUE, showWarnings = FALSE)
+      }else if(length(Database.Dir) == 1 && dir.exists(Database.Dir)){
+        Database.Dir <- normalizePath(Database.Dir, winslash = "/", mustWork = TRUE)
       }else{
-        if(length(Database.Dir) == 1){
-          Database.Dir <- sub(pattern = "(\\\\*/*|/*\\\\*)$", replacement = "", x = Database.Dir)
-        }else{
-          stop("'Database.Dir'应为NULL或单一且存在的目录路径 ...")
-        }
+        stop("'Database.Dir'应为NULL或单一且存在的目录路径 ...")
       }
-      dir.create(Database.Dir, recursive = TRUE, showWarnings = FALSE)
-      Database.Dir <- normalizePath(Database.Dir, winslash = "/", mustWork = TRUE)
       Annovar.Command <- sprintf("%s \"%s\"", Annovar.Command, Database.Dir)
       
       # 运行指令
@@ -104,7 +99,7 @@ Annovar.Run <- function(Annovar.Input, Database,
       if(length(Annovar.Dir) == 0){
         # 若Annovar.Dir未配置, 则将其设置为当前工作目录
         Annovar.Dir <- getwd()
-      }else if(length(Annovar.Dir) == 1){
+      }else if(length(Annovar.Dir) == 1 && dir.exists(Annovar.Dir)){
         Annovar.Dir <- normalizePath(Annovar.Dir, winslash = "/", mustWork = TRUE)
       }else{
         stop("'Annovar.Dir'应为NULL或单一且存在的目录路径 ...")
@@ -113,7 +108,7 @@ Annovar.Run <- function(Annovar.Input, Database,
       
       # 配置Annovar.Input[<query-file>]
       Annovar.Input <- as.character(Annovar.Input)
-      if(length(Annovar.Input) == 1){
+      if(length(Annovar.Input) == 1 && file.exists(Annovar.Input)){
         Annovar.Command <- sprintf("%s \"%s\"", Annovar.Command, normalizePath(Annovar.Input, winslash = "/", mustWork = TRUE))
       }else{
         stop("'Annovar.Input'应为单一且存在的文件路径 ...")
@@ -123,7 +118,7 @@ Annovar.Run <- function(Annovar.Input, Database,
       Database.Dir <- as.character(Database.Dir)
       if(length(Database.Dir) == 0){
         Annovar.Command <- sprintf("%s \"%s\"", Annovar.Command, normalizePath(sprintf("%s/humandb", Annovar.Dir), winslash = "/", mustWork = TRUE))
-      }else if(length(Database.Dir) == 1){
+      }else if(length(Database.Dir) == 1 && dir.exists(Database.Dir)){
         Annovar.Command <- sprintf("%s \"%s\"", Annovar.Command, normalizePath(Database.Dir, winslash = "/", mustWork = TRUE))
       }else{
         stop("'Database.Dir'应为NULL或单一且存在的目录路径 ...")

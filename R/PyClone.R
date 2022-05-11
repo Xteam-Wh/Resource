@@ -72,7 +72,7 @@ PyClone.Run <- function(PyClone.Input,
       }else if(length(Tumour.Contents) == length(PyClone.Input) && all(Tumour.Contents> 0 & Tumour.Contents <= 1)){
         PyClone.Command <- sprintf("%s --tumour_contents %s", PyClone.Command, paste0(format(Tumour.Contents, scientific = FALSE), collapse = " ")) 
       }else{
-        stop("'Tumour_contents'应为介于(0,1]之间的单一数值或与'PyClone.Input'等长的numeric向量 ...")
+        stop("'Tumour_contents'应为介于(0,1]之间的单一numeric值或与'PyClone.Input'等长的numeric向量 ...")
       }
       
       # 配置Seed[--seed]
@@ -143,7 +143,7 @@ PyClone.Run <- function(PyClone.Input,
       # 配置Config.Extras.File[--config_extras_file]
       Config.Extras.File <- as.character(Config.Extras.File)
       if(length(Config.Extras.File) > 0){
-        if(length(Config.Extras.File) == 1){
+        if(length(Config.Extras.File) == 1 && file.exists(Config.Extras.File)){
           PyClone.Command <- sprintf("%s --config_extras_file %s", PyClone.Command, normalizePath(Config.Extras.File, winslash = "/", mustWork = TRUE))
         }else{
           stop("'Config.Extras.File'应为NULL或单一且存在的文件路径 ...")

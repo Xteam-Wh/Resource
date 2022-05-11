@@ -23,7 +23,7 @@ Feature.Selection.Stepwise <- function(Data, Is.Reg = TRUE){
       Full.Model <- glm(as.formula(paste0(Category," ~ .")), family = binomial(link='logit'), data = Data)# 构建全特征罗杰斯特回归模型
     }
   }else{
-    stop("'Is.Reg'应为单一的logical值")
+    stop("'Is.Reg'应为单一的logical值 ...")
   }
   # 逐步回归进行特征选择
   Forward.Model <- stepAIC(Null.Model, trace = FALSE, direction = "forward", scope = list(lower=Null.Model, upper=Full.Model))

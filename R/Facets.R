@@ -40,7 +40,7 @@ Facets.SNP.Pileup <- function(BAM.Set, Common.Vcf,
       }else{
         stop("'BAM.Set'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
-      if(length(Common.Vcf) == 1){
+      if(length(Common.Vcf) == 1 && file.exists(Common.Vcf)){
         Common.Vcf <- normalizePath(Common.Vcf, winslash = "/", mustWork = TRUE)
       }else{
         stop("'Common.Vcf'应为单一且存在的文件路径 ...")
@@ -253,115 +253,116 @@ Facets.CNV.Calling <- function(SNP.Pileup.Res,
                                Genome.Assemblies = c("hg18", "hg19", "hg38", "mm9", "mm10", "udef"), Udef.GC.List = NULL, Err.Thresh = Inf, Del.Thresh = Inf, 
                                Min.Depth = 35, Max.Depth = 1000, SNP.Het.VAF = 0.25, Bin.Size = 250, Segmentation.Critical.Value = c(25, 150), Segment.Min.Het = 15, EM.Max.Iter = 10, EM.Con.Thresh = 0.001){
   library(facets)
+
+  ############
+  ## 1.参数判断
+  ############
   SNP.Pileup.Res <- as.character(SNP.Pileup.Res)
   if(length(SNP.Pileup.Res) == 1 && file.exists(SNP.Pileup.Res)){
-    
-    ############
-    ## 1.参数判断
-    ############
-    Tumor.Normal.Matched <- as.logical(Tumor.Normal.Matched)
-    if(length(Tumor.Normal.Matched) != 1){
-      stop("'Tumor.Normal.Matched'应为单一的logical值 ...")
-    }
-    
-    LogOR.Powerful <- as.logical(LogOR.Powerful)
-    if(length(LogOR.Powerful) != 1){
-      stop("'LogOR.Powerful'应为单一的logical值 ...")
-    }
-    
-    Show.Plot <- as.logical(Show.Plot)
-    if(length(Show.Plot) != 1){
-      stop("'Show.Plot'应为单一的logical值 ...")
-    }
-    
-    Err.Thresh <- as.numeric(Err.Thresh)
-    if(length(Err.Thresh) != 1 || ! (is.infinite(Err.Thresh) || (Err.Thresh >= 0 && Err.Thresh %% 1 == 0))){
-      stop("'Err.Thresh'应为Inf或单一的大于等于0的整型numeric值 ...")
-    }
-    
-    Del.Thresh <- as.numeric(Del.Thresh)
-    if(length(Del.Thresh) != 1 || ! (is.infinite(Del.Thresh) || (Del.Thresh >= 0 && Del.Thresh %% 1 == 0))){
-      stop("'Del.Thresh'应为Inf或单一的大于等于0的整型numeric值 ...")
-    }
-    
-    Min.Depth <- as.numeric(Min.Depth)
-    if(length(Min.Depth) != 1 || Min.Depth < 0 || Min.Depth %% 1 != 0){
-      stop("'Min.Depth'应为单一的大于等于0的整型numeric值 ...")
-    }
-    
-    Max.Depth <- as.numeric(Max.Depth)
-    if(length(Max.Depth) != 1 || ! (is.infinite(Max.Depth) || (Max.Depth >= 0 && Max.Depth %% 1 == 0))){
-      stop("'Max.Depth'应为Inf或单一的大于等于0的整型numeric值 ...")
-    }
-    
-    SNP.Het.VAF <- as.numeric(SNP.Het.VAF)
-    if(length(SNP.Het.VAF) != 1 || SNP.Het.VAF < 0 || SNP.Het.VAF >= 0.5){
-      stop("'SNP.Het.VAF'应为单一的介于[0,0.5)之间的numeric值 ...")
-    }else{
-      if(! Tumor.Normal.Matched && SNP.Het.VAF > 0.1){
-        stop("'Tumor.Normal.Matched'为FALSE, 'SNP.Het.VAF'应为单一的介于[0,0.1]之间的numeric值 ...")
-      }
-    }
-    
-    Bin.Size <- as.numeric(Bin.Size)
-    if(length(Bin.Size) != 1 || Bin.Size < 0 || Bin.Size %% 1 != 0){
-      stop("'Bin.Size'应为单一的大于等于0的整型numeric值 ...")
-    }
-    
-    Segmentation.Critical.Value <- as.numeric(Segmentation.Critical.Value)
-    if(length(Segmentation.Critical.Value) != 2 || any(Segmentation.Critical.Value < 0) || Segmentation.Critical.Value[1] > Segmentation.Critical.Value[2]){
-      stop("'Segmentation.Critical.Value'应为包含两个元素的numeric向量, 要求每个元素均大于等于0且第二元素大于等于第一元素 ...")
-    }
-    
-    Segment.Min.Het <- as.numeric(Segment.Min.Het)
-    if(length(Segment.Min.Het) != 1 || Segment.Min.Het <= 0 || Segment.Min.Het %% 1 != 0){
-      stop("'EM.Con.Thresh'应为单一的大于0的整型numeric值 ...")
-    }
-    
-    EM.Max.Iter <- as.numeric(EM.Max.Iter)
-    if(length(EM.Max.Iter) != 1 || EM.Max.Iter < 0 || EM.Max.Iter %% 1 != 0){
-      stop("'EM.Max.Iter'应为单一的大于等于0的整型numeric值 ...")
-    }
-    
-    EM.Con.Thresh <- as.numeric(EM.Con.Thresh)
-    if(length(EM.Con.Thresh) != 1 || EM.Con.Thresh <= 0){
-      stop("'EM.Con.Thresh'应为单一的大于0的numeric值 ...")
-    }
-    
-    ############
-    ## 2.数据预处理以及拷贝数的估计
-    ############
-    # 读取Snp Pileup生成的read矩阵，统计每个SNP位点在正常样本和肿瘤样本中覆盖到的总read数(参考+替换)以及比对到参考基因组的read数
-    SNP.Read.Mtr <- readSnpMatrix(SNP.Pileup.Res, err.thresh = Err.Thresh, del.thresh = Del.Thresh)
-    Chrom.Is.Numeric <- grepl("^\\d*$", SNP.Read.Mtr$Chromosome)
-    Mtr.Chrom.Numeric <- SNP.Read.Mtr[Chrom.Is.Numeric, ]
-    Mtr.Chrom.Character <- SNP.Read.Mtr[! Chrom.Is.Numeric, ]
-    SNP.Read.Mtr <- rbind(Mtr.Chrom.Numeric[order(as.numeric(Mtr.Chrom.Numeric$Chromosome)), ], Mtr.Chrom.Character[order(Mtr.Chrom.Character$Chromosome), ])
-    # 数据预处理(SNP位点的杂合性判断与筛选，LogR与LogOR值的计算, SNP位点片段化)
-    Mtr.Processes <- preProcSample(SNP.Read.Mtr, gbuild = match.arg(Genome.Assemblies), ugcpct = as.list(Udef.GC.List), unmatched = !Tumor.Normal.Matched, ndepth = Min.Depth, ndepthmax = Max.Depth, het.thresh = SNP.Het.VAF, snp.nbhd = Bin.Size, hetscale = LogOR.Powerful, cval = Segmentation.Critical.Value[1])
-    # 为EM算法估计初始的参数值(片段重选，片段聚类，估计二倍体状态LogR，估计拷贝数状态、细胞分数等参数)
-    NV.Fit <- procSample(Mtr.Processes, cval = Segmentation.Critical.Value[2], min.nhet = Segment.Min.Het)
-    # 基于期望最大化(EM)算法估计最终参数(纯度、倍性、拷贝数状态、细胞分数)
-    EM.Fit <- emcncf(NV.Fit, min.nhet = Segment.Min.Het, maxiter = EM.Max.Iter, eps = EM.Con.Thresh)
-    
-    ############
-    ## 3.绘图
-    ############
-    if(Show.Plot){
-      plotSample(x = NV.Fit, emfit = EM.Fit)
-    }
-    
-    ############
-    ## 4.结果封装
-    ############
-    return(list(
-      Purity = EM.Fit$purity,
-      Ploidy = EM.Fit$ploidy,
-      Point.Data = data.frame(SeqName = NV.Fit$jointseg$chrom, Position = NV.Fit$jointseg$maploc, LogR = NV.Fit$jointseg$cnlr - NV.Fit$dipLogR, LogOR = NV.Fit$jointseg$valor),
-      Segment.Data = data.frame(SeqName = EM.Fit$cncf$chrom,  Position.Start = EM.Fit$cncf$start, Position.End = EM.Fit$cncf$end, LogR = EM.Fit$cncf$cnlr.median - EM.Fit$dipLogR, LogOR.Square = abs(EM.Fit$cncf$mafR), CN.Total = EM.Fit$cncf$tcn.em, CN.Minor = EM.Fit$cncf$lcn.em, Cell.Fraction = EM.Fit$cncf$cf.em)
-    ))
-    
+    SNP.Pileup.Res <- normalizePath(SNP.Pileup.Res, winslash = "/", mustWork = TRUE)
   }else{
     stop("'SNP.Pileup.Res'应为单一且存在的文件路径 ...")
   }
+  
+  Tumor.Normal.Matched <- as.logical(Tumor.Normal.Matched)
+  if(length(Tumor.Normal.Matched) != 1){
+    stop("'Tumor.Normal.Matched'应为单一的logical值 ...")
+  }
+  
+  LogOR.Powerful <- as.logical(LogOR.Powerful)
+  if(length(LogOR.Powerful) != 1){
+    stop("'LogOR.Powerful'应为单一的logical值 ...")
+  }
+  
+  Show.Plot <- as.logical(Show.Plot)
+  if(length(Show.Plot) != 1){
+    stop("'Show.Plot'应为单一的logical值 ...")
+  }
+  
+  Err.Thresh <- as.numeric(Err.Thresh)
+  if(length(Err.Thresh) != 1 || ! (is.infinite(Err.Thresh) || (Err.Thresh >= 0 && Err.Thresh %% 1 == 0))){
+    stop("'Err.Thresh'应为Inf或单一的大于等于0的整型numeric值 ...")
+  }
+  
+  Del.Thresh <- as.numeric(Del.Thresh)
+  if(length(Del.Thresh) != 1 || ! (is.infinite(Del.Thresh) || (Del.Thresh >= 0 && Del.Thresh %% 1 == 0))){
+    stop("'Del.Thresh'应为Inf或单一的大于等于0的整型numeric值 ...")
+  }
+  
+  Min.Depth <- as.numeric(Min.Depth)
+  if(length(Min.Depth) != 1 || Min.Depth < 0 || Min.Depth %% 1 != 0){
+    stop("'Min.Depth'应为单一的大于等于0的整型numeric值 ...")
+  }
+  
+  Max.Depth <- as.numeric(Max.Depth)
+  if(length(Max.Depth) != 1 || ! (is.infinite(Max.Depth) || (Max.Depth >= 0 && Max.Depth %% 1 == 0))){
+    stop("'Max.Depth'应为Inf或单一的大于等于0的整型numeric值 ...")
+  }
+  
+  SNP.Het.VAF <- as.numeric(SNP.Het.VAF)
+  if(length(SNP.Het.VAF) != 1 || SNP.Het.VAF < 0 || SNP.Het.VAF >= 0.5){
+    stop("'SNP.Het.VAF'应为单一的介于[0,0.5)之间的numeric值 ...")
+  }else{
+    if(! Tumor.Normal.Matched && SNP.Het.VAF > 0.1){
+      stop("'Tumor.Normal.Matched'为FALSE, 'SNP.Het.VAF'应为单一的介于[0,0.1]之间的numeric值 ...")
+    }
+  }
+  
+  Bin.Size <- as.numeric(Bin.Size)
+  if(length(Bin.Size) != 1 || Bin.Size < 0 || Bin.Size %% 1 != 0){
+    stop("'Bin.Size'应为单一的大于等于0的整型numeric值 ...")
+  }
+  
+  Segmentation.Critical.Value <- as.numeric(Segmentation.Critical.Value)
+  if(length(Segmentation.Critical.Value) != 2 || any(Segmentation.Critical.Value < 0) || Segmentation.Critical.Value[1] > Segmentation.Critical.Value[2]){
+    stop("'Segmentation.Critical.Value'应为包含两个元素的numeric向量, 要求每个元素均大于等于0且第二元素大于等于第一元素 ...")
+  }
+  
+  Segment.Min.Het <- as.numeric(Segment.Min.Het)
+  if(length(Segment.Min.Het) != 1 || Segment.Min.Het <= 0 || Segment.Min.Het %% 1 != 0){
+    stop("'EM.Con.Thresh'应为单一的大于0的整型numeric值 ...")
+  }
+  
+  EM.Max.Iter <- as.numeric(EM.Max.Iter)
+  if(length(EM.Max.Iter) != 1 || EM.Max.Iter < 0 || EM.Max.Iter %% 1 != 0){
+    stop("'EM.Max.Iter'应为单一的大于等于0的整型numeric值 ...")
+  }
+  
+  EM.Con.Thresh <- as.numeric(EM.Con.Thresh)
+  if(length(EM.Con.Thresh) != 1 || EM.Con.Thresh <= 0){
+    stop("'EM.Con.Thresh'应为单一的大于0的numeric值 ...")
+  }
+  
+  ############
+  ## 2.数据预处理以及拷贝数的估计
+  ############
+  # 读取Snp Pileup生成的read矩阵，统计每个SNP位点在正常样本和肿瘤样本中覆盖到的总read数(参考+替换)以及比对到参考基因组的read数
+  SNP.Read.Mtr <- readSnpMatrix(SNP.Pileup.Res, err.thresh = Err.Thresh, del.thresh = Del.Thresh)
+  Chrom.Is.Numeric <- grepl("^\\d*$", SNP.Read.Mtr$Chromosome)
+  Mtr.Chrom.Numeric <- SNP.Read.Mtr[Chrom.Is.Numeric, ]
+  Mtr.Chrom.Character <- SNP.Read.Mtr[! Chrom.Is.Numeric, ]
+  SNP.Read.Mtr <- rbind(Mtr.Chrom.Numeric[order(as.numeric(Mtr.Chrom.Numeric$Chromosome)), ], Mtr.Chrom.Character[order(Mtr.Chrom.Character$Chromosome), ])
+  # 数据预处理(SNP位点的杂合性判断与筛选，LogR与LogOR值的计算, SNP位点片段化)
+  Mtr.Processes <- preProcSample(SNP.Read.Mtr, gbuild = match.arg(Genome.Assemblies), ugcpct = as.list(Udef.GC.List), unmatched = !Tumor.Normal.Matched, ndepth = Min.Depth, ndepthmax = Max.Depth, het.thresh = SNP.Het.VAF, snp.nbhd = Bin.Size, hetscale = LogOR.Powerful, cval = Segmentation.Critical.Value[1])
+  # 为EM算法估计初始的参数值(片段重选，片段聚类，估计二倍体状态LogR，估计拷贝数状态、细胞分数等参数)
+  NV.Fit <- procSample(Mtr.Processes, cval = Segmentation.Critical.Value[2], min.nhet = Segment.Min.Het)
+  # 基于期望最大化(EM)算法估计最终参数(纯度、倍性、拷贝数状态、细胞分数)
+  EM.Fit <- emcncf(NV.Fit, min.nhet = Segment.Min.Het, maxiter = EM.Max.Iter, eps = EM.Con.Thresh)
+  
+  ############
+  ## 3.绘图
+  ############
+  if(Show.Plot){
+    plotSample(x = NV.Fit, emfit = EM.Fit)
+  }
+  
+  ############
+  ## 4.结果封装
+  ############
+  return(list(
+    Purity = EM.Fit$purity,
+    Ploidy = EM.Fit$ploidy,
+    Point.Data = data.frame(SeqName = NV.Fit$jointseg$chrom, Position = NV.Fit$jointseg$maploc, LogR = NV.Fit$jointseg$cnlr - NV.Fit$dipLogR, LogOR = NV.Fit$jointseg$valor),
+    Segment.Data = data.frame(SeqName = EM.Fit$cncf$chrom,  Position.Start = EM.Fit$cncf$start, Position.End = EM.Fit$cncf$end, LogR = EM.Fit$cncf$cnlr.median - EM.Fit$dipLogR, LogOR.Square = abs(EM.Fit$cncf$mafR), CN.Total = EM.Fit$cncf$tcn.em, CN.Minor = EM.Fit$cncf$lcn.em, Cell.Fraction = EM.Fit$cncf$cf.em)
+  ))
 }
