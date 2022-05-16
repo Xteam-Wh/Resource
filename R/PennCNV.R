@@ -12,8 +12,8 @@
 ##' @param PennCNV.Dir character PennCNV的安装目录(必要pl文件所存在的目录); 默认NULL, 即当前工作目录
 ##' @param System.Perl.Alias character Perl软件在系统中的可执行命令名; 默认"perl"
 PennCNV.Compile.PFB <- function(PennCNV.Input, 
-                            Position.File = NULL, PennCNV.Output = NULL, 
-                            PennCNV.Dir = NULL, System.Perl.Alias = "perl"){
+                                Position.File = NULL, PennCNV.Output = NULL, 
+                                PennCNV.Dir = NULL, System.Perl.Alias = "perl"){
   System.Perl.Alias <- as.character(System.Perl.Alias)
   if(length(System.Perl.Alias) == 1){
     # 判断System.Perl.Alias在系统中是否存在
@@ -94,11 +94,11 @@ PennCNV.Compile.PFB <- function(PennCNV.Input,
 ##' @param System.Perl.Alias character Perl软件在系统中的可执行命令名; 默认"perl"
 ##' @param Other.Options.Settings 其他参数的设置, 将被拼接到指令中进行调用; 默认NULL
 PennCNV.CNV.Calling <- function(PennCNV.Input, 
-                        HMM.File, PFB.File, 
-                        Target.Chr = c("Autosome", "Chr.X", "Chr.Y"),
-                        PennCNV.Dir = NULL, PennCNV.Output = NULL, Output.Tab = FALSE,
-                        GC.Model.File = NULL, Sample.Sex = NULL, With.Confidence = FALSE, 
-                        Coordinate.From.Input = FALSE, System.Perl.Alias = "perl", Other.Options.Settings = NULL){
+                                HMM.File, PFB.File, 
+                                Target.Chr = c("Autosome", "Chr.X", "Chr.Y"),
+                                PennCNV.Dir = NULL, PennCNV.Output = NULL, Output.Tab = FALSE,
+                                GC.Model.File = NULL, Sample.Sex = NULL, With.Confidence = FALSE, 
+                                Coordinate.From.Input = FALSE, System.Perl.Alias = "perl", Other.Options.Settings = NULL){
   System.Perl.Alias <- as.character(System.Perl.Alias)
   if(length(System.Perl.Alias) == 1){
     # 判断System.Perl.Alias在系统中是否存在

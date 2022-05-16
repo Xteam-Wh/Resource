@@ -1,10 +1,10 @@
 ##############################函数描述##############################
-# “Facets.SNP.Pileup”通过R函数传参调用SNP Pileup统计各样本在SNP位点处的[参考、替代、错误、缺失]的read数
+# “Facets.SNP.Pileup”通过R函数传参调用SNP Pileup统计各样本在SNP位点处的[参考、变异、错误、缺失]碱基的read数
 # "Facets.CNV.Calling"通过Facets包从SNP Pileup结果中推断等位特异拷贝数
 ####################################################################
 
 
-##' @description 通过R函数传参调用SNP Pileup统计各样本在SNP位点处的[参考、替代、错误、缺失]的read数
+##' @description 通过R函数传参调用SNP Pileup统计各样本在SNP位点处的[参考、变异、错误、缺失]碱基的read数
 ##' @param BAM.Set character[] BAM文件集合(建议对各文件提前进行coordinate排序处理)
 ##' @param Common.Vcf character 常见的多态SNP的VCF文件(一个很好的来源是dbSNP的common_all.vcf.gz, 建议提前进行与BAM文件进行一致的coordinate排序处理)
 ##' @param Output.Prefix character 结果文件(csv格式)前缀[可携带路径]; 默认NULL, 即前工作目录下的"Facets.SNP-Pileup"
@@ -336,7 +336,7 @@ Facets.CNV.Calling <- function(SNP.Pileup.Res,
   ############
   ## 2.数据预处理以及拷贝数的估计
   ############
-  # 读取Snp Pileup生成的read矩阵，统计每个SNP位点在正常样本和肿瘤样本中覆盖到的总read数(参考+替换)以及比对到参考基因组的read数
+  # 读取Snp Pileup生成的read矩阵，统计每个SNP位点在正常样本和肿瘤样本中覆盖到的总read数(参考+变异)以及比对到参考基因组的read数
   SNP.Read.Mtr <- readSnpMatrix(SNP.Pileup.Res, err.thresh = Err.Thresh, del.thresh = Del.Thresh)
   Chrom.Is.Numeric <- grepl("^\\d*$", SNP.Read.Mtr$Chromosome)
   Mtr.Chrom.Numeric <- SNP.Read.Mtr[Chrom.Is.Numeric, ]
@@ -359,10 +359,12 @@ Facets.CNV.Calling <- function(SNP.Pileup.Res,
   ############
   ## 4.结果封装
   ############
-  return(list(
-    Purity = EM.Fit$purity,
-    Ploidy = EM.Fit$ploidy,
-    Point.Data = data.frame(SeqName = NV.Fit$jointseg$chrom, Position = NV.Fit$jointseg$maploc, LogR = NV.Fit$jointseg$cnlr - NV.Fit$dipLogR, LogOR = NV.Fit$jointseg$valor),
-    Segment.Data = data.frame(SeqName = EM.Fit$cncf$chrom,  Position.Start = EM.Fit$cncf$start, Position.End = EM.Fit$cncf$end, LogR = EM.Fit$cncf$cnlr.median - EM.Fit$dipLogR, LogOR.Square = abs(EM.Fit$cncf$mafR), CN.Total = EM.Fit$cncf$tcn.em, CN.Minor = EM.Fit$cncf$lcn.em, Cell.Fraction = EM.Fit$cncf$cf.em)
-  ))
+  return(
+    list(
+      Purity = EM.Fit$purity,
+      Ploidy = EM.Fit$ploidy,
+      Point.Data = data.frame(SeqName = NV.Fit$jointseg$chrom, Position = NV.Fit$jointseg$maploc, LogR = NV.Fit$jointseg$cnlr - NV.Fit$dipLogR, LogOR = NV.Fit$jointseg$valor),
+      Segment.Data = data.frame(SeqName = EM.Fit$cncf$chrom,  Position.Start = EM.Fit$cncf$start, Position.End = EM.Fit$cncf$end, LogR = EM.Fit$cncf$cnlr.median - EM.Fit$dipLogR, LogOR.Square = abs(EM.Fit$cncf$mafR), CN.Total = EM.Fit$cncf$tcn.em, CN.Minor = EM.Fit$cncf$lcn.em, Cell.Fraction = EM.Fit$cncf$cf.em)
+    )
+  )
 }

@@ -171,10 +171,10 @@ Venn.View <- function(..., Sets.List = NULL,
 
 ##' @description 对基因组上的信号特征(点和线段)进行可视化(至少可视化一条基因组版本包含的序列)
 ##' @author Xteam.Wh
-##' @param ... list 每个list包含以下元素(其中至少要包含Point.Data与Segment.Data其中的一项, 否则将被从队列中移除: 
-############' $Feature.Name character 特征名，将作为对应的纵坐标title属性
-############' $Point.Data data.frame 包含必要列[SeqName(序列名), Position(所在序列的位点), Feature.Value(特征信号值)], 可选列[Feature.Type(特征信号所属类别)]
-############' $Segment.Data data.frame 包含必要列[SeqName(序列名), Position.Start(所在序列的起始位点), Position.End(所在序列的结束位点), Feature.Value(特征信号值)], 可选列[Feature.Type(特征信号所属类别)]
+##' @param ... list 每个list包含以下元素(其中至少要包含Point.Data与Segment.Data其中的一项, 否则将被从队列中移除): 
+############' $Feature.Name character 特征名，将作为对应的纵坐标title属性; 默认NULL
+############' $Point.Data data.frame 包含必要列[SeqName(序列名)、Position(所在序列的位点)、Feature.Value(特征信号值)], 可选列[Feature.Type(特征信号所属类别)]
+############' $Segment.Data data.frame 包含必要列[SeqName(序列名)、Position.Start(所在序列的起始位点)、Position.End(所在序列的结束位点)、 Feature.Value(特征信号值)], 可选列[Feature.Type(特征信号所属类别)]
 ############' $Point.Size numeric 设置点的尺寸; 默认1
 ############' $Point.Shape numeric | character 设置点型; 默认20
 ############' $Point.Alpha numeric 设置点的透明度; 默认0.66
@@ -187,13 +187,21 @@ Venn.View <- function(..., Sets.List = NULL,
 ############' $Segment.LineType numeric | character 设置线段的线型; 默认"solid"
 ############' $Colour.Map characte[] 设置颜色映射集合, 与"Feature.Type"包含的元素种类相对应; 默认NULL
 ##' @param Feature.Data.List list 特征list数据集合，每个特征信号对应一个list, 每个list包含的元素与可变参数(...)传入的每个list一致
-##' @param Auto.Marge logical 设置是否自动对各图表进行合并
-##' @param SeqName.Ratio numeric 设置组合图标中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE时生效; 默认0.125
+##' @param Title.Text character 设置图片的标题文本; 默认"Genome View"
+##' @param Auto.Marge logical 设置是否自动对各图表进行合并; 默认TRUE
 ##' @param Feature.Name.Aligned logical 设置各图表纵坐标title是否保持对齐, 当且仅当Auto.Marge = TRUE时生效; 默认FALSE
-##' @param Genome.Assemblies character 设置基因组版本号, 可选unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))
-##' @return 若Auto.Marge = TRUE, 则返回组合后的绘图信息; 若Auto.Marge = FALSE, 则返每个特征信号的绘图信息以及上下基因组条段绘图信息
-Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqName.Ratio = 0.125,  Feature.Name.Aligned = FALSE, 
-                        Genome.Assemblies = unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))){
+##' @param SeqName.Ratio numeric 设置组合图片中基因组条带图所占的比例, 当且仅当Auto.Marge = TRUE时生效; 默认0.125
+##' @param Title.Text.Ratio numeric 设置组合图片中标题文本图所占的比例, 当且仅当Auto.Marge = TRUE时生效; 默认0.075
+##' @param Title.Text.Size numeric 设置图片的标题文本字体大小, 仅当Title.Text不为NULL时生效; 默认8
+##' @param Title.Text.Colour character 设置图片的标题文本字体颜色, 仅当Title.Text不为NULL时生效; 默认"DarkSlateGray"
+##' @param Genome.Version character 设置基因组版本号, 可选unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))
+##' @return 若Auto.Marge = TRUE, 则返回组合后的绘图信息; 若Auto.Marge = FALSE, 则返回标题文本绘图信息、基因组条带绘图信息以及每个特征信号的绘图信息
+Genome.View <- function(..., 
+                        Feature.Data.List = NULL, 
+                        Title.Text = "Genome View", 
+                        Auto.Marge = TRUE,  Feature.Name.Aligned = FALSE, 
+                        SeqName.Ratio = 0.125, Title.Text.Ratio = 0.075, Title.Text.Size = 8, Title.Text.Colour = "DarkSlateGray", 
+                        Genome.Version = unique(c(GenomeInfoDb::registered_UCSC_genomes()$genome, GenomeInfoDb::registered_NCBI_assemblies()$assembly))){
   
   
   ############
@@ -206,9 +214,9 @@ Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqNam
   ## 1.导入相应的基因组版本相关信息
   ############
   # 匹配基因组版本
-  Genome.Assemblies <- match.arg(Genome.Assemblies)
+  Genome.Version <- match.arg(Genome.Version)
   # 查询基因组版本对应的基因组序列信息(名称、长度、...)
-  Genome.Seqinfo <- GenomeInfoDb::Seqinfo(genome = Genome.Assemblies)
+  Genome.Seqinfo <- GenomeInfoDb::Seqinfo(genome = Genome.Version)
   Genome.Seqinfo.SeqName <- Genome.Seqinfo@seqnames
   Genome.Seqinfo.SeqLength <- Genome.Seqinfo@seqlengths
   
@@ -237,6 +245,7 @@ Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqNam
         return(NA)
       }else{
         if(is.null(Feature.Data$Feature.Name)){
+          Feature.Data$Feature.Name <- NULL
           warning("当前数据未设置'Feature.Name'属性, 该属性将作为纵坐标title属性 ...", call. = FALSE)
         }
         if(! is.null(Feature.Data$Point.Data)){
@@ -271,7 +280,41 @@ Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqNam
     })
     
     ############
-    ## 6.绘制基因组序列条带(上下两条)
+    ## 6.绘制标题信息
+    ############
+    Title.Text <- as.character(Title.Text)
+    if(length(Title.Text) == 0){
+      Title.Plot <- NULL
+    }else if(length(Title.Text) == 1){
+      Title.Text.Size <- as.numeric(Title.Text.Size)
+      Title.Text.Colour <- as.numeric(Title.Text.Colour)
+      if(length(Title.Text.Size) == 1){
+        if(length(Title.Text.Colour) == 1){
+          Title.Plot <- ggplot() +
+            geom_text(aes(x = max(Common.SeqName.Info$Accumulate.SeqLength)/2, y = 0, label = Title.Text), fontface = "bold", size = Title.Text.Size, colour = Title.Text.Colour) + 
+            scale_y_continuous(limits = c(-1, 1), expand = expansion()) +
+            scale_x_continuous(limits = c(1, max(Common.SeqName.Info$Accumulate.SeqLength)), expand = expansion()) + 
+            coord_cartesian(clip = "off") + 
+            theme_void() + 
+            theme( 
+              legend.key = element_rect(colour = NA, fill = "transparent"),
+              plot.background = element_rect(colour = NA, fill = "transparent"), 
+              panel.background = element_rect(colour = NA, fill = "transparent"),
+              legend.background = element_rect(colour = NA, fill = "transparent"),
+              legend.box.background = element_rect(colour = NA, fill = "transparent")
+            )
+        }else{
+          stop("'Title.Text.Colour'应为单一的character值 ...")
+        }
+      }else{
+        stop("'Title.Text.Size'应为单一的numeric值 ...")
+      }
+    }else{
+      stop("'Title'应为NULL或单一的character值 ...")
+    }
+    
+    ############
+    ## 7.绘制基因组序列条带(上下两条)
     ############
     SeqName.Plots <- lapply(c(top = "top", bottom = "bottom"), function(Postion){
       Common.SeqName.Info.Num <- nrow(Common.SeqName.Info)
@@ -280,25 +323,31 @@ Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqNam
       }else{
         Label.Position.Index <- switch(Postion, top = seq(1, Common.SeqName.Info.Num, 2), bottom = seq(2, Common.SeqName.Info.Num, 2))
       }
-      SeqName.Plot <- ggplot() +
-        geom_rect(data = Common.SeqName.Info, aes(xmin = Accumulate.SeqLength - SeqLength + 1, xmax = Accumulate.SeqLength, ymin = -Inf, ymax = Inf, fill = SeqName), alpha = 0.5, show.legend = FALSE) + 
-        scale_y_continuous(limits = c(-1, 1), expand = expansion(0)) +
-        scale_x_continuous(limits = c(1, max(Common.SeqName.Info$Accumulate.SeqLength)), breaks = Common.SeqName.Info$Label.Position[Label.Position.Index], labels = Common.SeqName.Info$SeqName[Label.Position.Index], expand = expansion(0), position = Postion) + 
-        scale_fill_manual(values = setNames(sapply(seq_along(Common.SeqName.Info$SeqName), function(i){ifelse(i %% 2 == 0, 'gray', 'black')}), nm = Common.SeqName.Info$SeqName)) +
-        theme_test() +
-        theme(
-          axis.title = element_blank(),
-          axis.line.y = element_blank(),
-          axis.text.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.text.x = element_text(face = "bold"), 
-          plot.margin = margin(t = switch(Postion, top = 10, bottom = 2.5), r = 10, b = switch(Postion, top = 2.5, bottom = 10), l = 10)
-        )
-      return(SeqName.Plot)
+      return(
+        ggplot() +
+          geom_rect(data = Common.SeqName.Info, aes(xmin = Accumulate.SeqLength - SeqLength + 1, xmax = Accumulate.SeqLength, ymin = -Inf, ymax = Inf, fill = SeqName), alpha = 0.5, show.legend = FALSE) + 
+          scale_y_continuous(limits = c(-1, 1), expand = expansion()) +
+          scale_fill_manual(values = setNames(object = ifelse((1:nrow(Common.SeqName.Info)) %% 2 == 0, "gray", "black"), nm = Common.SeqName.Info$SeqName)) +
+          scale_x_continuous(limits = c(1, max(Common.SeqName.Info$Accumulate.SeqLength)), breaks = Common.SeqName.Info$Label.Position[Label.Position.Index], labels = Common.SeqName.Info$SeqName[Label.Position.Index], expand = expansion(), position = Postion) + 
+          theme_test() +
+          theme(
+            axis.title = element_blank(),
+            axis.line.y = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(face = "bold"), 
+            legend.key = element_rect(colour = NA, fill = "transparent"),
+            plot.background = element_rect(colour = NA, fill = "transparent"), 
+            panel.background = element_rect(colour = NA, fill = "transparent"),
+            legend.background = element_rect(colour = NA, fill = "transparent"),
+            legend.box.background = element_rect(colour = NA, fill = "transparent"), 
+            plot.margin = margin(t = switch(Postion, top = 10, bottom = 2.5), r = 10, b = switch(Postion, top = 2.5, bottom = 10), l = 10)
+          )
+      )
     })
     
     ############
-    ## 7.绘制各特征信号(点、线段)
+    ## 8.绘制各特征信号(点、线段)
     ############
     Feature.Plots <- lapply(Feature.Data.List[!is.na(Feature.Data.List)], function(Feature.Data){
       Point.Data <- Feature.Data$Point.Data
@@ -313,8 +362,8 @@ Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqNam
       }
       Feature.Plot <- ggplot() +
         geom_rect(data = Common.SeqName.Info, aes(xmin = Accumulate.SeqLength - SeqLength + 1, xmax = Accumulate.SeqLength, ymin = -Inf, ymax = Inf, fill = SeqName), alpha = 0.05, show.legend = FALSE) +
-        scale_x_continuous(limits = c(1, max(Common.SeqName.Info$Accumulate.SeqLength)), breaks = Common.SeqName.Info$Label.Position[Bottom.Position.Index], labels = Common.SeqName.Info$SeqName[Bottom.Position.Index], expand = expansion(0), sec.axis = dup_axis(breaks = Common.SeqName.Info$Label.Position[Top.Position.Index], labels = Common.SeqName.Info$SeqName[Top.Position.Index])) + 
-        scale_fill_manual(values = setNames(sapply(seq_along(Common.SeqName.Info$SeqName), function(i){ifelse(i %% 2 == 0, 'gray', 'black')}), nm = Common.SeqName.Info$SeqName))
+        scale_fill_manual(values = setNames(object = ifelse((1:nrow(Common.SeqName.Info)) %% 2 == 0, "gray", "black"), nm = Common.SeqName.Info$SeqName)) +
+        scale_x_continuous(limits = c(1, max(Common.SeqName.Info$Accumulate.SeqLength)), breaks = Common.SeqName.Info$Label.Position[Bottom.Position.Index], labels = Common.SeqName.Info$SeqName[Bottom.Position.Index], expand = expansion(), sec.axis = dup_axis(breaks = Common.SeqName.Info$Label.Position[Top.Position.Index], labels = Common.SeqName.Info$SeqName[Top.Position.Index])) + 
       if(! is.null(Point.Data)){
         if(is.null(Point.Data$Feature.Type)){
           Feature.Plot <- Feature.Plot + geom_point(data = Point.Data, aes(x = Position, y = Feature.Value), colour = Feature.Data$Point.Colour, shape = Feature.Data$Point.Shape, fill = Feature.Data$Point.Fill, stroke = Feature.Data$Point.Stroke, size = Feature.Data$Point.Size, alpha = Feature.Data$Point.Alpha)
@@ -336,41 +385,37 @@ Genome.View <- function(..., Feature.Data.List = NULL, Auto.Marge = TRUE, SeqNam
           stop("当前数据'Colour.Map'应为NULL或与‘Feature.Type’包含的元素种类相对应的character向量 ...")
         }
       }
-      Feature.Plot <- Feature.Plot + labs(x = NULL, y = Feature.Data$Feature.Name) + theme_test()
-      return(Feature.Plot)
+      return(Feature.Plot + labs(x = NULL, y = Feature.Data$Feature.Name) + theme_test() +theme(legend.key = element_rect(colour = NA, fill = "transparent"), plot.background = element_rect(colour = NA, fill = "transparent"), panel.background = element_rect(colour = NA, fill = "transparent"), legend.background = element_rect(colour = NA, fill = "transparent"), legend.box.background = element_rect(colour = NA, fill = "transparent")))
     })
     
     ############
-    ## 7.格式化返回的可视化结果
+    ## 9.格式化返回的可视化结果
     ############
     Auto.Marge <- as.logical(Auto.Marge)
     if(length(Auto.Marge) == 1){
       if(Auto.Marge){
         Feature.Plots <- lapply(Feature.Plots, function(Feature.Plot){
-          Feature.Plot <- Feature.Plot + theme(
-            axis.line.x = element_blank(),
-            axis.text.x = element_blank(),
-            axis.ticks.x = element_blank(),
-            axis.title.x = element_blank(),
-            axis.ticks.length.x = unit(0, "pt"),
-            legend.title = element_blank(),
-            plot.margin = margin(t = 2.5, r = 10, b = 2.5, l = 10)
+          return(Feature.Plot + theme(axis.line.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank(), axis.ticks.length.x = unit(0, "pt"), legend.title = element_blank(), plot.margin = margin(t = 2.5, r = 10, b = 2.5, l = 10))
           )
-          return(Feature.Plot)
         })
+        Title.Text.Ratio <- as.numeric(Title.Text.Ratio)
         SeqName.Ratio <- as.numeric(SeqName.Ratio)
         Feature.Name.Aligned <- as.logical(Feature.Name.Aligned)
-        if(length(SeqName.Ratio) == 1 && SeqName.Ratio > 0 && SeqName.Ratio < 1){
-          if(length(Feature.Name.Aligned) == 1){
-            return(cowplot::plot_grid(plotlist = c(SeqName.Plots[1], Feature.Plots, SeqName.Plots[2]), ncol = 1, rel_heights = c(SeqName.Ratio/2, rep((1 - SeqName.Ratio)/length(Feature.Plots), length(Feature.Plots)), SeqName.Ratio/2), align = "v", axis = "lr", greedy = Feature.Name.Aligned))
+        if(length(Title.Text.Ratio) == 1 && Title.Text.Ratio >= 0 && Title.Text.Ratio < 1){
+          if(length(SeqName.Ratio) == 1 && SeqName.Ratio > 0 && SeqName.Ratio < 1){
+            if(length(Feature.Name.Aligned) == 1){
+              return(cowplot::plot_grid(plotlist = c(list(Title.Plot), SeqName.Plots[1], Feature.Plots, SeqName.Plots[2]), ncol = 1, rel_heights = c(Title.Text.Ratio, SeqName.Ratio/2, rep((1 - Title.Text.Ratio - SeqName.Ratio)/length(Feature.Plots), length(Feature.Plots)), SeqName.Ratio/2), align = "v", axis = "lr", greedy = Feature.Name.Aligned))
+            }else{
+              stop("'Feature.Name.Aligned'应为单一的logical值 ...")
+            }
           }else{
-            stop("'Feature.Name.Aligned'应为单一的logical值 ...")
+            stop("'SeqName.Ratio'应为单一的介于(0, 1)之间的numeric值 ...")
           }
         }else{
-          stop("'SeqName.Ratio'应为单一的介于(0, 1)之间的numeric值 ...")
+          stop("'Title.Text.Ratio'应为单一的介于[0, 1)之间的numeric值 ...")
         }
       }else{
-        return(list(SeqName.Plots = SeqName.Plots, Feature.Plots = Feature.Plots))
+        return(list(Title.Plot = Title.Plot, SeqName.Plots = SeqName.Plots, Feature.Plots = Feature.Plots))
       }
     }else{
       stop("'Auto.Marge'应为单一的logical值 ...")
