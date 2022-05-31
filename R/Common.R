@@ -23,7 +23,7 @@ System.Command.Run <- function(System.Command, Success.Message = NULL){
   }
   
   # 根据操作系统环境设置脚本文件
-  Command.Script.File <- sprintf(ifelse(Sys.info()["sysname"] == "Windows", "%s/Command.Script.bat", "%s/Command.Script.sh"), getwd())
+  Command.Script.File <- normalizePath(tempfile(tmpdir = getwd(), pattern = "Command.Script[", fileext = sprintf("].%s", ifelse(Sys.info()["sysname"] == "Windows", "bat", "sh"))), winslash = "/", mustWork = FALSE)
   # 将指令写入对应系统的脚本文件
   write(sprintf(ifelse(Sys.info()["sysname"] == "Windows", "@echo off\n%s", "#!/bin/sh\n%s"),  System.Command), Command.Script.File)
   # 赋予脚本文件读写以及可执行权限

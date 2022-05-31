@@ -27,7 +27,7 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
         if(length(Java.Options.Settings) == 1){
           Gatk.GetSampleName.Command <- sprintf("\"%s\" %s", System.Java.Alias, trimws(Java.Options.Settings))
         }else{
-          stop("'Java.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Java.Options.Settings'应为NULL或单一的character值 ...")
         }
       }else{
         Gatk.GetSampleName.Command <- sprintf("\"%s\"", System.Java.Alias)
@@ -57,6 +57,9 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
       # 运行指令
       System.Command.Run(System.Command = Gatk.GetSampleName.Command)
       
+      # 返回获取的样本名称
+      return(readLines(Sample.Temp.Output, warn = FALSE))
+      
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))
     }
@@ -70,6 +73,8 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
 ##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
 ##' @param Genome.Refence character 参考基因组文件[fasta格式, 且要求所在目录下同时含有对应的索引文件与序列字典文件]
 ##' @param AM.Input character[] 要读取的SAM/BAM/CRAM文件集合[来自同一个体，且要求所在目录下同时含有对应的索引文件]
+##' @param Genome.Intervals character 限制对基因组区域的子集进行操作的基因组区间文件(支持Bed格式与Picard格式), 对于靶向测序应该设置该参数; 默认NULL
+##' @param Intervals.Padding numeric 在Genome.Intervals中包含的各区间两侧添加一定的填充, 以包括侧翼区域(以bp为单位); 默认0
 ##' @param Output.Prefix character 结果文件(vcf格式)前缀[可携带路径]; 默认NULL, 即当前工作目录下的"Gatk.Mutect2"
 ##' @param Output.Compressed logical 是否对结果文件进行压缩处理[Xxx.vcf.gz]; 默认FALSE
 ##' @param With.F1R2.Counts character 是否为肿瘤样本统计F1R2计数[将输出一个Xxx.tar.gz文件, 可用于后续模型方向偏差参数的估计], 主要用于测序前在单链上发生取代错误的样本(FFPE肿瘤样本); 默认FALSE
@@ -82,6 +87,7 @@ Gatk.GetSampleName <- function(Gatk.Local.Jar, AM.Input, System.Java.Alias = "ja
 ##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用; 默认NULL
 Gatk.Mutect2 <- function(Gatk.Local.Jar, 
                          Genome.Refence, AM.Input, 
+                         Genome.Intervals = NULL, Intervals.Padding = 0,
                          Output.Prefix = NULL, Output.Compressed = FALSE, 
                          With.F1R2.Counts = FALSE, Keep.Diff.Contig.Reads = FALSE, 
                          Normal.Samples = NULL,  Normal.Panel = NULL, Germline.Resource = NULL, 
@@ -98,7 +104,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
         if(length(Java.Options.Settings) == 1){
           Gatk.Mutect2.Command <- sprintf("\"%s\" %s", System.Java.Alias, trimws(Java.Options.Settings))
         }else{
-          stop("'Java.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Java.Options.Settings'应为NULL或单一的character值 ...")
         }
       }else{
         Gatk.Mutect2.Command <- sprintf("\"%s\"", System.Java.Alias)
@@ -128,6 +134,24 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
         stop("'AM.Input'应为至少包含一个元素的文件集合, 且各文件应已经存在 ...")
       }
       
+      # 配置Genome.Intervals[--intervals / -L]
+      Genome.Intervals<- as.character(Genome.Intervals)
+      if(length(Genome.Intervals) > 0){
+        if(length(Genome.Intervals) == 1 && file.exists(Genome.Intervals)){
+          Gatk.Mutect2.Command <- sprintf("%s --intervals \"%s\"", Gatk.Mutect2.Command, normalizePath(Genome.Intervals, winslash = "/", mustWork = TRUE))
+        }else{
+          stop("'Genome.Intervals'应为NULL或单一且存在的文件路径 ...")
+        }
+      }
+      
+      # 配置Intervals.Padding[--interval-padding / -ip]
+      Intervals.Padding <- as.numeric(Intervals.Padding)
+      if(length(Intervals.Padding) > 0 && Intervals.Padding >= 0 && Intervals.Padding %% 1 == 0){
+        Gatk.Mutect2.Command <- sprintf("%s --interval-padding %s", Gatk.Mutect2.Command, Intervals.Padding)
+      }else{
+        stop("'Intervals.Padding'应为单一的大于等于0的整型numeric值 ...")
+      }
+      
       # 配置Normal.Samples[--normal-sample / -normal]
       Normal.Samples <- as.character(Normal.Samples)
       if(length(Normal.Samples) > 0){
@@ -137,20 +161,20 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
       # 配置Normal.Panel[--panel-of-normals / -pon]
       Normal.Panel <- as.character(Normal.Panel)
       if(length(Normal.Panel) > 0){
-        if(length(Normal.Panel) == 1 && file.exists(Genome.Refence)){
+        if(length(Normal.Panel) == 1 && file.exists(Normal.Panel)){
           Gatk.Mutect2.Command <- sprintf("%s --panel-of-normals \"%s\"", Gatk.Mutect2.Command, normalizePath(Normal.Panel, winslash = "/", mustWork = TRUE))
         }else{
-          stop("'Normal.Panel'应为Null或单一且存在的文件路径 ...")
+          stop("'Normal.Panel'应为NULL或单一且存在的文件路径 ...")
         }
       }
       
       # 配置Germline.Resource[--germline-resource]
       Germline.Resource <- as.character(Germline.Resource)
       if(length(Germline.Resource) > 0){
-        if(length(Germline.Resource) == 1 && file.exists(Genome.Refence)){
+        if(length(Germline.Resource) == 1 && file.exists(Germline.Resource)){
           Gatk.Mutect2.Command <- sprintf("%s --germline-resource \"%s\"", Gatk.Mutect2.Command, normalizePath(Germline.Resource, winslash = "/", mustWork = TRUE))
         }else{
-          stop("'Germline.Resource'应为Null或单一且存在的文件路径 ...")
+          stop("'Germline.Resource'应为NULL或单一且存在的文件路径 ...")
         }
       }
       
@@ -170,7 +194,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
         if(length(Other.Options.Settings) == 1){
           Gatk.Mutect2.Command <- sprintf("%s %s", Gatk.Mutect2.Command, trimws(Other.Options.Settings))
         }else{
-          stop("'Other.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Other.Options.Settings'应为NULL或单一的character值 ...")
         }
       }
       
@@ -182,7 +206,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
         Output.Prefix <- normalizePath(Output.Prefix, winslash = "/", mustWork = FALSE)
         dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
-        stop("'Output.Prefix'应为Null或单一的character值 ...")
+        stop("'Output.Prefix'应为NULL或单一的character值 ...")
       }
       
       # 配置With.F1R2.Counts[--f1r2-tar-gz]
@@ -194,7 +218,7 @@ Gatk.Mutect2 <- function(Gatk.Local.Jar,
           Gatk.Mutect2.Command <- sprintf("%s --f1r2-tar-gz \"%s\"", Gatk.Mutect2.Command, normalizePath(Mutect2.F1R2.Output, winslash = "/", mustWork = TRUE))
         }
       }else{
-        stop("'Statistics.F1R2.Count'应为单一的logical值 ...")
+        stop("'With.F1R2.Counts'应为单一的logical值 ...")
       }
       
       # 配置Output.Compressed[--output / -O]
@@ -242,7 +266,7 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
         if(length(Java.Options.Settings) == 1){
           Gatk.LearnReadOrientationModel.Command <- sprintf("\"%s\" %s", System.Java.Alias, trimws(Java.Options.Settings))
         }else{
-          stop("'Java.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Java.Options.Settings'应为NULL或单一的character值 ...")
         }
       }else{
         Gatk.LearnReadOrientationModel.Command <- sprintf("\"%s\"", System.Java.Alias)
@@ -250,7 +274,7 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
       
       # 配置Gatk.Local.Jar[指定Gatk本地jar包]
       Gatk.Local.Jar <- as.character(Gatk.Local.Jar)
-      if(length(Gatk.Local.Jar) == 1 && file.exists(Genome.Refence)){
+      if(length(Gatk.Local.Jar) == 1 && file.exists(Gatk.Local.Jar)){
         Gatk.LearnReadOrientationModel.Command <- sprintf("%s -jar \"%s\" LearnReadOrientationModel", Gatk.LearnReadOrientationModel.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
       }else{
         stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
@@ -270,7 +294,7 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
         if(length(Other.Options.Settings) == 1){
           Gatk.LearnReadOrientationModel.Command <- sprintf("%s %s", Gatk.LearnReadOrientationModel.Command, trimws(Other.Options.Settings))
         }else{
-          stop("'Other.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Other.Options.Settings'应为NULL或单一的character值 ...")
         }
       }
       
@@ -282,7 +306,7 @@ Gatk.LearnReadOrientationModel <- function(Gatk.Local.Jar,
         Output.Prefix <- normalizePath(Output.Prefix, winslash = "/", mustWork = FALSE)
         dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
-        stop("'Output.Prefix'应为Null或单一的character值 ...")
+        stop("'Output.Prefix'应为NULL或单一的character值 ...")
       }
       Orientation.Model.Output <- sprintf("%s.tar.gz", Output.Prefix)
       file.create(Orientation.Model.Output, showWarnings = FALSE)
@@ -324,7 +348,7 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
         if(length(Java.Options.Settings) == 1){
           Gatk.GetPileupSummaries.Command <- sprintf("\"%s\" %s", System.Java.Alias, trimws(Java.Options.Settings))
         }else{
-          stop("'Java.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Java.Options.Settings'应为NULL或单一的character值 ...")
         }
       }else{
         Gatk.GetPileupSummaries.Command <- sprintf("\"%s\"", System.Java.Alias)
@@ -360,7 +384,7 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
         if(length(Other.Options.Settings) == 1){
           Gatk.GetPileupSummaries.Command <- sprintf("%s %s", Gatk.GetPileupSummaries.Command, trimws(Other.Options.Settings))
         }else{
-          stop("'Other.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Other.Options.Settings'应为NULL或单一的character值 ...")
         }
       }
       
@@ -372,7 +396,7 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
         Output.Prefix <- normalizePath(Output.Prefix, winslash = "/", mustWork = FALSE)
         dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
-        stop("'Output.Prefix'应为Null或单一的character值 ...")
+        stop("'Output.Prefix'应为NULL或单一的character值 ...")
       }
       Pileup.Table.Output <- sprintf("%s.table", Output.Prefix)
       file.create(Pileup.Table.Output, showWarnings = FALSE)
@@ -381,6 +405,112 @@ Gatk.GetPileupSummaries <- function(Gatk.Local.Jar,
       
       # 运行指令
       System.Command.Run(System.Command = Gatk.GetPileupSummaries.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", Pileup.Table.Output))
+      
+    }else{
+      stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))
+    }
+  }else{
+    stop("'System.Java.Alias'应为单一的character值 ...")
+  }
+}
+
+
+##' @description 通过R函数传参调用Gatk CalculateContamination评估交叉样本污染reads分数
+##' @param Gatk.Local.Jar character "gatk-package-Xxx-local.jar"文件路径(存在于gatk安装目录中)
+##' @param Tumor.Pileup.Input character 由Gatk GetPileupSummaries针对肿瘤样本统计的堆积指标文件
+##' @param Normal.Pileup.Input character 由Gatk GetPileupSummaries针对正常样本[与肿瘤样本来自同一个体]统计的堆积指标文件
+##' @param With.Segmentation.Table logical 是否输出按次等位基因分数划分的肿瘤样本区段; 默认FALSE
+##' @param Output.Prefix character 结果文件前缀[可携带路径]; 默认为当前工作目录下的"Gatk.CalculateContamination"
+##' @param System.Java.Alias character java软件在系统中的可执行命令名; 默认为"java"
+##' @param Java.Options.Settings character Java运行环境参数配置, 如设置JVM内存大小(-Xms...、-Xmx...)、并发GC线程数(-XX:ParallelGCThreads=...)等
+##' @param Other.Options.Settings character 其他参数的设置, 将被拼接到指令中进行调用
+Gatk.CalculateContamination <- function(Gatk.Local.Jar, 
+                                        Tumor.Pileup.Input, Normal.Pileup.Input = NULL, With.Segmentation.Table = FALSE, 
+                                        Output.Prefix = NULL,System.Java.Alias = "java", Java.Options.Settings = NULL, Other.Options.Settings = NULL){
+  System.Java.Alias <- as.character(System.Java.Alias)
+  if(length(System.Java.Alias) == 1){
+    # 判断System.Java.Alias在系统中是否存在
+    if(nchar(Sys.which(System.Java.Alias)) > 0){
+      
+      # 配置Java.Options.Settings[Java运行环境设置]
+      Java.Options.Settings <- as.character(Java.Options.Settings)
+      if(length(Java.Options.Settings) > 0){
+        if(length(Java.Options.Settings) == 1){
+          Gatk.CalculateContamination.Command <- sprintf("\"%s\" %s", System.Java.Alias, trimws(Java.Options.Settings))
+        }else{
+          stop("'Java.Options.Settings'应为Null或单一的character值 ...")
+        }
+      }else{
+        Gatk.CalculateContamination.Command <- sprintf("\"%s\"", System.Java.Alias)
+      }
+      
+      # 配置Gatk.Local.Jar[指定Gatk本地jar包]
+      Gatk.Local.Jar <- as.character(Gatk.Local.Jar)
+      if(length(Gatk.Local.Jar) == 1 && file.exists(Gatk.Local.Jar)){
+        Gatk.CalculateContamination.Command <- sprintf("%s -jar \"%s\" CalculateContamination", Gatk.CalculateContamination.Command, normalizePath(Gatk.Local.Jar, winslash = "/", mustWork = TRUE))
+      }else{
+        stop("'Gatk.Local.Jar'应为单一且存在的文件路径 ...")
+      }
+      
+      # 配置Tumor.Pileup.Input[--input / -I]
+      Tumor.Pileup.Input <- as.character(Tumor.Pileup.Input)
+      if(length(Tumor.Pileup.Input) == 1 && file.exists(Tumor.Pileup.Input)){
+        Gatk.CalculateContamination.Command <- sprintf("%s --input \"%s\"", Gatk.CalculateContamination.Command, normalizePath(Tumor.Pileup.Input, winslash = "/", mustWork = TRUE))
+      }else{
+        stop("'Tumor.Pileup.Input'应为单一且存在的文件路径 ...")
+      }
+      
+      # 配置Normal.Pileup.Input[--matched-normal / -matched]
+      Normal.Pileup.Input <- as.character(Normal.Pileup.Input)
+      if(length(Normal.Pileup.Input) > 0){
+        if(length(Normal.Pileup.Input) == 1 && file.exists(Normal.Pileup.Input)){
+          Gatk.CalculateContamination.Command <- sprintf("%s --matched-normal \"%s\"", Gatk.CalculateContamination.Command, normalizePath(Normal.Pileup.Input, winslash = "/", mustWork = TRUE))
+        }else{
+          stop("'Normal.Pileup.Input'应为NULL或单一且存在的文件路径 ...")
+        }
+      }
+      
+      # 配置Other.Options.Settings[其他参数]
+      Other.Options.Settings <- as.character(Other.Options.Settings)
+      if(length(Other.Options.Settings) > 0){
+        if(length(Other.Options.Settings) == 1){
+          Gatk.CalculateContamination.Command <- sprintf("%s %s", Gatk.CalculateContamination.Command, trimws(Other.Options.Settings))
+        }else{
+          stop("'Other.Options.Settings'应为Null或单一的character值 ...")
+        }
+      }
+      
+      # 配置Output.Prefix
+      Output.Prefix <- as.character(Output.Prefix)
+      if(length(Output.Prefix) == 0){
+        Output.Prefix <- sprintf("%s/Gatk.CalculateContamination", getwd())
+      }else if(length(Output.Prefix) == 1){
+        Output.Prefix <- normalizePath(Output.Prefix, winslash = "/", mustWork = FALSE)
+        dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
+      }else{
+        stop("'Output.Prefix'应为Null或单一的character值 ...")
+      }
+      
+      # 配置With.Segmentation.Table[--tumor-segmentation / -segments]
+      With.Segmentation.Table <- as.logical(With.Segmentation.Table)
+      if(length(With.Segmentation.Table) == 1){
+        if(With.Segmentation.Table){
+          Segmentation.Table.Output <- sprintf("%s.segmentation.table", Output.Prefix)
+          file.create(Segmentation.Table.Output, showWarnings = FALSE)
+          Gatk.CalculateContamination.Command <- sprintf("%s --tumor-segmentation %s", Gatk.CalculateContamination.Command, normalizePath(Segmentation.Table.Output, winslash = "/", mustWork = TRUE))
+        }
+      }else{
+        stop("'With.Segmentation.Table'应为单一的logical值 ...")
+      }
+      
+      # 配置Contamination.Table.Output[--output / -O]
+      Contamination.Table.Output <- sprintf("%s.table", Output.Prefix)
+      file.create(Contamination.Table.Output, showWarnings = FALSE)
+      Contamination.Table.Output <- normalizePath(Contamination.Table.Output, winslash = "/", mustWork = TRUE)
+      Gatk.CalculateContamination.Command <- sprintf("%s --output \"%s\"", Gatk.CalculateContamination.Command, Contamination.Table.Output)
+      
+      # 运行指令
+      System.Command.Run(System.Command = Gatk.CalculateContamination.Command, Success.Message = sprintf("结果已输出至文件'%s' ...", Contamination.Table.Output))
       
     }else{
       stop(sprintf("非系统的可执行命令'%s' ...", System.Java.Alias))
@@ -420,7 +550,7 @@ Gatk.FilterMutectCalls <- function(Gatk.Local.Jar,
         if(length(Java.Options.Settings) == 1){
           Gatk.FilterMutectCalls.Command <- sprintf("\"%s\" %s", System.Java.Alias, trimws(Java.Options.Settings))
         }else{
-          stop("'Java.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Java.Options.Settings'应为NULL或单一的character值 ...")
         }
       }else{
         Gatk.FilterMutectCalls.Command <- sprintf("\"%s\"", System.Java.Alias)
@@ -474,7 +604,7 @@ Gatk.FilterMutectCalls <- function(Gatk.Local.Jar,
         if(length(Other.Options.Settings) == 1){
           Gatk.FilterMutectCalls.Command <- sprintf("%s %s", Gatk.FilterMutectCalls.Command, trimws(Other.Options.Settings))
         }else{
-          stop("'Other.Options.Settings'应为Null或单一的character值 ...")
+          stop("'Other.Options.Settings'应为NULL或单一的character值 ...")
         }
       }
       
@@ -486,7 +616,7 @@ Gatk.FilterMutectCalls <- function(Gatk.Local.Jar,
         Output.Prefix <- normalizePath(Output.Prefix, winslash = "/", mustWork = FALSE)
         dir.create(dirname(Output.Prefix), recursive = TRUE, showWarnings = FALSE)
       }else{
-        stop("'Output.Prefix'应为Null或单一的character值 ...")
+        stop("'Output.Prefix'应为NULL或单一的character值 ...")
       }
       
       # 配置Filter.Output.Compressed[--output / -O]

@@ -129,26 +129,26 @@ ASCAT.CNV.Calling <- function(Tumor.BAF.File, Tumor.LogR.File,
   ASCAT.Temp.Dir <- normalizePath(tempdir(check = TRUE), winslash = "/", mustWork = TRUE)
   on.exit(unlink(ASCAT.Temp.Dir, recursive = TRUE, force = TRUE))
   # 载入数据
-  ASCAT.Object = ascat.loadData(gender = Sample.Genders, 
+  ASCAT.Object <- ascat.loadData(gender = Sample.Genders, 
                                 genomeVersion = match.arg(Genome.Version), 
                                 Tumor_BAF_file = Tumor.BAF.File, Tumor_LogR_file = Tumor.LogR.File, 
                                 Germline_BAF_file = Normal.BAF.File, Germline_LogR_file = Normal.LogR.File)
   
   # 矫正校正肿瘤样本的LogR值
   if(! is.null(GC.Content.File)){
-    ASCAT.Object = ascat.correctLogR(ASCAT.Object, GCcontentfile = GC.Content.File, replictimingfile = Replication.Timing.File)
+    ASCAT.Object <- ascat.correctLogR(ASCAT.Object, GCcontentfile = GC.Content.File, replictimingfile = Replication.Timing.File)
   }
   # 若缺少配对的正常样本数据, 需要依据SNP阵列平台预测正常样本的基因型数据
   if(is.null(Normal.BAF.File) || is.null(Normal.LogR.File)){
     # 预测正常样本的因型
-    ASCAT.Germline.Genotype = ascat.predictGermlineGenotypes(ASCAT.Object, platform = match.arg(Array.Platform))
+    ASCAT.Germline.Genotype <- ascat.predictGermlineGenotypes(ASCAT.Object, platform = match.arg(Array.Platform))
   }else{
-    ASCAT.Germline.Genotype = NULL
+    ASCAT.Germline.Genotype <- NULL
   }
   # 片段分割
-  ASCAT.Object = ascat.aspcf(ASCAT.Object, ascat.gg = ASCAT.Germline.Genotype, out.dir = ASCAT.Temp.Dir)
+  ASCAT.Object <- ascat.aspcf(ASCAT.Object, ascat.gg = ASCAT.Germline.Genotype, out.dir = ASCAT.Temp.Dir)
   # 估计肿瘤纯度、倍性、等位特异拷贝数等信息
-  ASCAT.Output = ascat.runAscat(ASCAT.Object, gamma = Technology.Parameter.Gamma, pdfPlot = TRUE, min_ploidy = Min.Ploidy, max_ploidy = Max.Ploidy, img.dir = ASCAT.Temp.Dir)
+  ASCAT.Output <- ascat.runAscat(ASCAT.Object, gamma = Technology.Parameter.Gamma, pdfPlot = TRUE, min_ploidy = Min.Ploidy, max_ploidy = Max.Ploidy, img.dir = ASCAT.Temp.Dir)
   
   ############
   ## 3.结果封装
@@ -189,6 +189,7 @@ ASCAT.CNV.Calling <- function(Tumor.BAF.File, Tumor.LogR.File,
 ##' @param HTS.Normal.File character 正常样本的高通量测序数据, 要求是BAM文件或CRAM文件格式
 ##' @param Tumor.Name character 设置肿瘤样本的名称; 默认NULL, 即HTS.Tumor.File的文件名
 ##' @param Normal.Name character 设置正常样本的名称; 默认NULL, 即HTS.Normal.File的文件名
+##' @param Intervals.Bed character 限制对基因组区域的子集进行操作的基因组区间Bed文件, 仅考虑落在其中的SNP位点; 默认NULL
 ##' @param Genome.Refence character 参考基因组文件(FASTA格式), 当BCRAM文件的Header中找不到对应的参考基因组文件信息时需要进行指定; 默认NULL
 ##' @param OutPut.Dir character 结果文件的输出目录; 默认NULL, 即当前工作目录
 ##' @param System.Allelecounter.Alias character AlleleCounter软件在系统中的可执行命令名; 默认"alleleCounter"
@@ -202,8 +203,8 @@ ASCAT.CNV.Calling <- function(Tumor.BAF.File, Tumor.LogR.File,
 ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix, 
                                    HTS.Tumor.File, HTS.Normal.File, 
                                    Tumor.Name = NULL, Normal.Name = NULL, 
-                                   Genome.Refence = NULL, OutPut.Dir = NULL, 
-                                   System.Allelecounter.Alias = "alleleCounter",
+                                   System.Allelecounter.Alias = "alleleCounter", 
+                                   Intervals.Bed = NULL, Genome.Refence = NULL, OutPut.Dir = NULL, 
                                    N.Threads = 1, Min.Depth = 10, Min.Map.Quality = 35, Min.Base.Quality = 20, 
                                    Chromosomes = c(1:22, "X"), Sample.Gender = c("XX", "XY"), Genome.Version = c("hg19","hg38")){
   library(ASCAT)
@@ -253,6 +254,15 @@ ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix,
         stop("'Normal.Name'应为单一的character值 ...")
       }
       
+      Intervals.Bed <- as.character(Intervals.Bed)
+      if(length(Intervals.Bed) == 0){
+        Intervals.Bed <- NA
+      }else if(length(Intervals.Bed) == 1 && file.exists(Intervals.Bed)){
+        Intervals.Bed <- normalizePath(Intervals.Bed, winslash = "/", mustWork = TRUE)
+      }else{
+        stop("'Intervals.Bed'应为NULL或单一且存在的文件路径 ...")
+      }
+      
       Genome.Refence <- as.character(Genome.Refence)
       if(length(Genome.Refence) == 0){
         Genome.Refence <- NA
@@ -300,6 +310,7 @@ ASCAT.Extract.LogR.BAF <- function(Loci.Prefix, Alleles.Prefix,
       ## 2.计算LogR值与BAF值
       ############
       ascat.prepareHTS(allelecounter_exe = System.Allelecounter.Alias, 
+                       BED_file = Intervals.Bed, ref.fasta = Genome.Refence, 
                        loci.prefix = Loci.Prefix, alleles.prefix = Alleles.Prefix,
                        tumourseqfile = HTS.Tumor.File, normalseqfile = HTS.Normal.File, tumourname = Tumor.Name,  normalname = Normal.Name, 
                        tumourBAF_file = sprintf("%s/%s.BAF", OutPut.Dir, Tumor.Name), normalBAF_file = sprintf("%s/%s.BAF", OutPut.Dir, Normal.Name), 
